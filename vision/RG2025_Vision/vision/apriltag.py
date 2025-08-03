@@ -3,7 +3,7 @@ from core.logger import logger
 import json
 import os
 import numpy as np
-from pupil_apriltags import Detector
+from pyapriltags import Detector
 tag36h11_config = {
     'nthreads': 1,
     'quad_decimate': 1.0,

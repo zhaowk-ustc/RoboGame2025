@@ -9,7 +9,7 @@ dependencies:
   - pip
   - pip:
       - cv2_enumerate_cameras
-      - pupil-apriltags
+      - pyapriltags
       - pyserial
       - nicegui
       - asyncio
