@@ -5,6 +5,8 @@ from vision.camera import cameras
 
 
 def np_to_pil(img_np):
+    if img_np is None:
+        return get_placeholder_img()
     if isinstance(img_np, Image.Image):
         return img_np
     return Image.fromarray(img_np.astype('uint8'), 'RGB')

@@ -2,6 +2,7 @@ import cv2
 import time
 import logging
 import hashlib
+import platform
 from cv2_enumerate_cameras import enumerate_cameras
 from core.logger import logger
 camera_info_list = []
@@ -10,7 +11,15 @@ camera_info_list = []
 def setup_camera_info():
     """初始化摄像头信息"""
     global camera_info_list
-    camera_info_list = enumerate_cameras(cv2.CAP_MSMF)
+    # 根据操作系统选择合适的摄像头后端
+    if platform.system() == "Windows":
+        backend = cv2.CAP_MSMF
+    elif platform.system() == "Linux":
+        backend = cv2.CAP_V4L2
+    else:  # macOS
+        backend = cv2.CAP_AVFOUNDATION
+    
+    camera_info_list = enumerate_cameras(backend)
     logger.info(f"已找到 {len(camera_info_list)} 个摄像头", notify_gui=False)
     for idx, info in enumerate(camera_info_list):
         name = getattr(info, 'name', None)

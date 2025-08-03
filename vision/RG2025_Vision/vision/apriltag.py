@@ -62,8 +62,12 @@ class AprilTagDetector:
         在原图像上绘制AprilTag检测结果。
         img: np.ndarray 或 PIL.Image
         detect_result: list/dict，格式为AprilTag检测返回的结果
-        返回PIL.Image
+        返回PIL.Image或None
         """
+        # 如果检测结果为None，则返回None
+        if detect_result is None:
+            return None
+            
         import cv2
         import numpy as np
         from PIL import Image, ImageDraw, ImageFont

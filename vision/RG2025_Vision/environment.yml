@@ -14,3 +14,5 @@ dependencies:
       - nicegui
       - asyncio
       - pyee
+      - psutil
+      - Pillow
