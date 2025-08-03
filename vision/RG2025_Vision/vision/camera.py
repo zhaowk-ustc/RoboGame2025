@@ -20,6 +20,10 @@ def setup_camera_info():
         backend = cv2.CAP_AVFOUNDATION
     
     camera_info_list = enumerate_cameras(backend)
+
+    for info in camera_info_list:
+        info.name = info.name + f" ({info.index})"
+
     logger.info(f"已找到 {len(camera_info_list)} 个摄像头", notify_gui=False)
     for idx, info in enumerate(camera_info_list):
         name = getattr(info, 'name', None)
@@ -87,6 +91,11 @@ class Camera:
             if not self.cap.isOpened():
                 raise ConnectionError(f"无法打开摄像头 {self.info.name}")
 
+            # Linux优化：设置视频格式为MJPEG以提高性能
+            if platform.system() == "Linux":
+                # 尝试设置MJPEG格式以减少带宽需求
+                self.cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc('M', 'J', 'P', 'G'))
+            
             # 应用分辨率设置
             if self.width and self.height:
                 self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, self.width)

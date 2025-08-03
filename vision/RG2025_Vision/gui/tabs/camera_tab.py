@@ -77,11 +77,6 @@ def render_camera_tab():
                         'bg-grey-2 q-pa-sm').style('white-space:pre-line;word-break:break-all;min-width:200px;min-height:200px;')
                     text_widgets.append(text_widget)
 
-    # 缓存上一次的图片和文本，避免重复刷新导致闪烁
-    last_imgs = [None] * len(img_elems)
-    last_overlays = [None] * len(overlay_elems)
-    last_texts = [None] * len(text_widgets)
-
     import io
     import base64
 
@@ -96,46 +91,25 @@ def render_camera_tab():
         buf = io.BytesIO()
         img.save(buf, format='JPEG', quality=80)
         return base64.b64encode(buf.getvalue()).decode('utf-8')
-
-    last_frame_times = [None for _ in cameras]  # type: list[float | None]
-    import time
     
     def update_imgs():
         results = get_camera_imgs()
         for i, (img, overlay, text) in enumerate(results):
             cam = cameras[i]
-            frame_time = cam.last_frame_time
-            if last_frame_times[i] is None:
-                # 初次加载时显示占位图像和文本
-                pil_img = np_to_pil(img)
-                b64 = pil_to_base64(pil_img)
-                ui.run_javascript(
-                    f'document.getElementById("{img_elems[i]}").src = "data:image/jpeg;base64,{b64}";')
-                pil_overlay = np_to_pil(overlay)
-                b64_overlay = pil_to_base64(pil_overlay)
-                ui.run_javascript(
-                    f'document.getElementById("{overlay_elems[i]}").src = "data:image/jpeg;base64,{b64_overlay}";')
-                text_widgets[i].set_value(text)
-                last_imgs[i] = img
-                last_overlays[i] = overlay
-                last_texts[i] = text
-                last_frame_times[i] = time.time()
-            if frame_time != last_frame_times[i] and frame_time is not None:
-                # 原图
-                pil_img = np_to_pil(img)
-                b64 = pil_to_base64(pil_img)
-                ui.run_javascript(
-                    f'document.getElementById("{img_elems[i]}").src = "data:image/jpeg;base64,{b64}";')
-                last_imgs[i] = img
-                # 叠加层
-                pil_overlay = np_to_pil(overlay)
-                b64_overlay = pil_to_base64(pil_overlay)
-                ui.run_javascript(
-                    f'document.getElementById("{overlay_elems[i]}").src = "data:image/jpeg;base64,{b64_overlay}";')
-                last_overlays[i] = overlay
-                last_frame_times[i] = frame_time
-                # 文本
-                text_widgets[i].set_value(text)
-                last_texts[i] = text
+            
+            # 原图
+            pil_img = np_to_pil(img)
+            b64 = pil_to_base64(pil_img)
+            ui.run_javascript(
+                f'document.getElementById("{img_elems[i]}").src = "data:image/jpeg;base64,{b64}";')
+            
+            # 叠加层
+            pil_overlay = np_to_pil(overlay)
+            b64_overlay = pil_to_base64(pil_overlay)
+            ui.run_javascript(
+                f'document.getElementById("{overlay_elems[i]}").src = "data:image/jpeg;base64,{b64_overlay}";')
+            
+            # 文本
+            text_widgets[i].set_value(text)
 
-    ui.timer(1.0/5, update_imgs)  # 30Hz刷新
+    ui.timer(1.0/10, update_imgs)  # 30Hz刷新
