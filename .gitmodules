@@ -1,0 +1,3 @@
+[submodule "vision/RG2025Vision"]
+	path = vision/RG2025Vision
+	url = ./vision/RG2025Vision
