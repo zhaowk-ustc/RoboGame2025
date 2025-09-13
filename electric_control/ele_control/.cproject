@@ -1157,7 +1157,7 @@
 			<resource resourceType="PROJECT" workspacePath="/Seekfree_TC264_Opensource_Library"/>
 		</configuration>
 		<configuration configurationName="Debug">
-			<resource resourceType="PROJECT" workspacePath="/Seekfree_TC264_Opensource_Library"/>
+			<resource resourceType="PROJECT" workspacePath="/ele_control"/>
 		</configuration>
 		<configuration configurationName="Release">
 			<resource resourceType="PROJECT" workspacePath="/Seekfree_TC264_Opensource_Library"/>

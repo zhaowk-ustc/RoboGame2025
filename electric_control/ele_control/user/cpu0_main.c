@@ -36,14 +36,9 @@
 #pragma section all "cpu0_dsram"
 // 将本语句与#pragma section all restore语句之间的全局变量都放在CPU0的RAM中
 
-#define SHOT_FRONT_LEFT (ATOM2_CH2_P11_3)
-#define SHOT_FRONT_RIGHT (ATOM2_CH1_P11_2)
-#define SHOT_BACK_LEFT (ATOM2_CH6_P13_1)
-#define SHOT_BACK_RIGHT (ATOM2_CH5_P13_0)
-
-const pwm_channel_enum channel_list[4] = {SHOT_FRONT_LEFT, SHOT_FRONT_RIGHT, SHOT_BACK_LEFT, SHOT_BACK_RIGHT};
-
-int16 duty = 0;
+// 本例程是开源库空工程 可用作移植或者测试各类内外设
+// 本例程是开源库空工程 可用作移植或者测试各类内外设
+// 本例程是开源库空工程 可用作移植或者测试各类内外设
 
 // **************************** 代码区域 ****************************
 int core0_main(void)
@@ -51,10 +46,9 @@ int core0_main(void)
     clock_init();                   // 获取时钟频率<务必保留>
     debug_init();                   // 初始化默认调试串口
     // 此处编写用户代码 例如外设初始化代码等
-    pwm_init(SHOT_FRONT_LEFT, 50, 0);
-    pwm_init(SHOT_FRONT_RIGHT, 50, 0);
-    pwm_init(SHOT_BACK_LEFT, 50, 0);
-    pwm_init(SHOT_BACK_RIGHT, 50, 0);
+
+
+
 
     // 此处编写用户代码 例如外设初始化代码等
     cpu_wait_event_ready();         // 等待所有核心初始化完毕
@@ -62,12 +56,7 @@ int core0_main(void)
     {
         // 此处编写需要循环执行的代码
 
-        duty = 600;
 
-        pwm_set_duty(channel_list[0], duty);  //占空比duty/10000
-        pwm_set_duty(channel_list[1], duty);
-        pwm_set_duty(channel_list[2], duty);
-        pwm_set_duty(channel_list[3], duty);
 
 
         // 此处编写需要循环执行的代码
