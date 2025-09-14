@@ -43,7 +43,6 @@ typedef struct
     float accel_x;
     float accel_y;
     float accel_z;
-    float temp;
     float gyro_x;
     float gyro_y;
     float gyro_z;
@@ -56,8 +55,6 @@ typedef struct
 typedef struct
 {
     GyroData sensor_data;
-    float quaternion[4];
-    float euler_angles[3];
     float position[3];
     float velocity[3];
     uint32 last_update_time;
@@ -96,13 +93,9 @@ void parse_gyro_data(uint8 *data, uint8 type);
 uint8 checksum(uint8 *data, uint8 len, uint8 sum);
 
 // 运动控制函数
-void set_motion(const MotorPattern *pattern, uint16 pwm_val);
+void set_motion(const MotorPattern *pattern);
 
 // 导航算法函数
-void Quaternion_Normalize(float q[4]);
-void Quaternion_Multiply(float result[4], const float q1[4], const float q2[4]);
-void Quaternion_ToEuler(float q[4], float euler[3]);
-void INS_UpdateAttitude(INS_System *ins, GyroData *data);
 void INS_UpdatePosition(INS_System *ins, GyroData *data);
 
 // 调试输出函数

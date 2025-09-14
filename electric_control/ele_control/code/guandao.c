@@ -24,9 +24,7 @@ const MotorPattern PATTERN_BACK = {{0, 1, 0, 1, 0, 1, 0, 1}};
 const MotorPattern PATTERN_CCW = {{0, 1, 1, 0, 0, 1, 1, 0}};
 // 顺时针旋转：左轮前进，右轮后退
 const MotorPattern PATTERN_CW = {{1, 0, 0, 1, 1, 0, 0, 1}};
-// 左移：
 const MotorPattern PATTERN_LEFT = {{0, 1, 1, 0, 1, 0, 0, 1}};
-// 右移：
 const MotorPattern PATTERN_RIGHT = {{1, 0, 0, 1, 0, 1, 1, 0}};
 // 停止
 const MotorPattern PATTERN_STOP = {{0, 0, 0, 0, 0, 0, 0, 0}};
@@ -34,8 +32,6 @@ const MotorPattern PATTERN_STOP = {{0, 0, 0, 0, 0, 0, 0, 0}};
 /* ===================== 初始化函数 ===================== */
 void guandao_init(void)
 {
-    clock_init();
-    debug_init();
 
     // 初始化FIFO
     fifo_init(&uart_data_fifo, FIFO_DATA_8BIT, fifo_get_data, GYRO_DATA_BUFFER_SIZE);
@@ -83,11 +79,6 @@ void control_init(void)
 
 void INS_Init(INS_System *ins)
 {
-    ins->quaternion[0] = 1.0f;
-    ins->quaternion[1] = 0.0f;
-    ins->quaternion[2] = 0.0f;
-    ins->quaternion[3] = 0.0f;
-
     for (int i = 0; i < 3; i++)
     {
         ins->position[i] = 0.0f;
@@ -130,7 +121,6 @@ void unpack_and_analyze_imu_data(void)
                     if (packet_type == 0x53)
                     {
                         print_gyro_data();
-                        INS_UpdateAttitude(&ins, &gyro_data);
                         INS_UpdatePosition(&ins, &gyro_data);
                         INS_PrintData(&ins);
                     }
@@ -150,12 +140,10 @@ void parse_gyro_data(uint8 *data, uint8 type)
         int16 ax = (data[3] << 8) | data[2];
         int16 ay = (data[5] << 8) | data[4];
         int16 az = (data[7] << 8) | data[6];
-        int16 temp = (data[9] << 8) | data[8];
 
         gyro_data.accel_x = (float)ax / 32768.0f * 16.0f;
         gyro_data.accel_y = (float)ay / 32768.0f * 16.0f;
         gyro_data.accel_z = (float)az / 32768.0f * 16.0f;
-        gyro_data.temp = (float)temp / 32768.0f * 96.38f + 36.53f;
         break;
     }
     case 0x52:
@@ -192,7 +180,7 @@ uint8 checksum(uint8 *data, uint8 len, uint8 sum)
 }
 
 /* ===================== 运动控制函数 ===================== */
-void set_motion(const MotorPattern *pattern, uint16 pwm_val)
+void set_motion(const MotorPattern *pattern)
 {
     const uint32 pins[8] = {
         FRONT_LEFT_PIN1, FRONT_LEFT_PIN2,
@@ -203,94 +191,62 @@ void set_motion(const MotorPattern *pattern, uint16 pwm_val)
     {
         gpio_set_level(pins[i], pattern->in[i] ? GPIO_HIGH : GPIO_LOW);
     }
-    pwm_set_duty(BACK_LEFT_PWM, pwm_val);
-    pwm_set_duty(BACK_RIGHT_PWM, pwm_val);
-    pwm_set_duty(FRONT_RIGHT_PWM, pwm_val);
-    pwm_set_duty(FRONT_LEFT_PWM, pwm_val);
+    // 判断是否为前进/后退模式
+    int is_front = 1, is_back = 1;
+    for (int i = 0; i < 8; i++)
+    {
+        if (pattern->in[i] != PATTERN_FRONT.in[i])
+            is_front = 0;
+        if (pattern->in[i] != PATTERN_BACK.in[i])
+            is_back = 0;
+    }
+    if (is_front || is_back)
+    {
+        pwm_set_duty(FRONT_LEFT_PWM, 4000);
+        pwm_set_duty(FRONT_RIGHT_PWM, 4000);
+        pwm_set_duty(BACK_LEFT_PWM, 4000);
+        pwm_set_duty(BACK_RIGHT_PWM, 4000);
+    }
+    else
+    {
+        pwm_set_duty(FRONT_LEFT_PWM, 5250);
+        pwm_set_duty(FRONT_RIGHT_PWM, 5250);
+        pwm_set_duty(BACK_LEFT_PWM, 3400);
+        pwm_set_duty(BACK_RIGHT_PWM, 3400);
+    }
 }
 
 /* ===================== 导航算法函数 ===================== */
-void Quaternion_Normalize(float q[4])
-{
-    float norm = sqrtf(q[0] * q[0] + q[1] * q[1] + q[2] * q[2] + q[3] * q[3]);
-    if (norm > 0.0f)
-    {
-        q[0] /= norm;
-        q[1] /= norm;
-        q[2] /= norm;
-        q[3] /= norm;
-    }
-}
-
-void Quaternion_Multiply(float result[4], const float q1[4], const float q2[4])
-{
-    result[0] = q1[0] * q2[0] - q1[1] * q2[1] - q1[2] * q2[2] - q1[3] * q2[3];
-    result[1] = q1[0] * q2[1] + q1[1] * q2[0] + q1[2] * q2[3] - q1[3] * q2[2];
-    result[2] = q1[0] * q2[2] - q1[1] * q2[3] + q1[2] * q2[0] + q1[3] * q2[1];
-    result[3] = q1[0] * q2[3] + q1[1] * q2[2] - q1[2] * q2[1] + q1[3] * q2[0];
-}
-
-void Quaternion_ToEuler(float q[4], float euler[3])
-{
-    euler[0] = atan2f(2.0f * (q[0] * q[1] + q[2] * q[3]), 1.0f - 2.0f * (q[1] * q[1] + q[2] * q[2]));
-
-    float sinp = 2.0f * (q[0] * q[2] - q[3] * q[1]);
-    if (fabsf(sinp) >= 1.0f)
-        euler[1] = copysignf(M_PI / 2.0f, sinp);
-    else
-        euler[1] = asinf(sinp);
-
-    euler[2] = atan2f(2.0f * (q[0] * q[3] + q[1] * q[2]), 1.0f - 2.0f * (q[2] * q[2] + q[3] * q[3]));
-}
-
-void INS_UpdateAttitude(INS_System *ins, GyroData *data)
-{
-    uint32 current_time = system_getval_ms();
-    ins->dt = (current_time - ins->last_update_time) / 1000.0f;
-    ins->last_update_time = current_time;
-
-    float wx = data->gyro_x * M_PI / 180.0f;
-    float wy = data->gyro_y * M_PI / 180.0f;
-    float wz = data->gyro_z * M_PI / 180.0f;
-
-    float q_dot[4];
-    q_dot[0] = 0.5f * (-ins->quaternion[1] * wx - ins->quaternion[2] * wy - ins->quaternion[3] * wz);
-    q_dot[1] = 0.5f * (ins->quaternion[0] * wx + ins->quaternion[2] * wz - ins->quaternion[3] * wy);
-    q_dot[2] = 0.5f * (ins->quaternion[0] * wy - ins->quaternion[1] * wz + ins->quaternion[3] * wx);
-    q_dot[3] = 0.5f * (ins->quaternion[0] * wz + ins->quaternion[1] * wy - ins->quaternion[2] * wx);
-
-    ins->quaternion[0] += q_dot[0] * ins->dt;
-    ins->quaternion[1] += q_dot[1] * ins->dt;
-    ins->quaternion[2] += q_dot[2] * ins->dt;
-    ins->quaternion[3] += q_dot[3] * ins->dt;
-
-    Quaternion_Normalize(ins->quaternion);
-    Quaternion_ToEuler(ins->quaternion, ins->euler_angles);
-}
-
 void INS_UpdatePosition(INS_System *ins, GyroData *data)
 {
-    float q0 = ins->quaternion[0], q1 = ins->quaternion[1];
-    float q2 = ins->quaternion[2], q3 = ins->quaternion[3];
+    // 更新时间间隔dt
+    uint32_t now = system_getval_ms();
+    ins->dt = (now - ins->last_update_time) / 1000.0f;
+    ins->last_update_time = now;
 
-    float R11 = 2.0f * (q0 * q0 + q1 * q1) - 1.0f;
-    float R12 = 2.0f * (q1 * q2 - q0 * q3);
-    float R13 = 2.0f * (q1 * q3 + q0 * q2);
+    // 1. 读取本体坐标系下的加速度（单位g，需转m/s^2）
+    float ax = data->accel_x * 9.8f;
+    float ay = data->accel_y * 9.8f;
+    // 2. 获取当前偏航角yaw（单位：度，需转弧度）
+    float yaw_rad = data->yaw * M_PI / 180.0f;
 
-    float R21 = 2.0f * (q1 * q2 + q0 * q3);
-    float R22 = 2.0f * (q0 * q0 + q2 * q2) - 1.0f;
-    float R23 = 2.0f * (q2 * q3 - q0 * q1);
+    // 3. 坐标变换：本体加速度转到世界坐标系（地面xy）
+    float a_world[3];
 
-    float accel_world[3];
-    accel_world[0] = R11 * (data->accel_x * 9.8f) + R12 * (data->accel_y * 9.8f) + R13 * (data->accel_z - 1) * 9.8f;
-    accel_world[1] = R21 * (data->accel_x * 9.8f) + R22 * (data->accel_y * 9.8f) + R23 * (data->accel_z - 1) * 9.8f;
-    accel_world[2] = 0;
+    a_world[0] = ax * cosf(yaw_rad) - ay * sinf(yaw_rad);
+    a_world[1] = ax * sinf(yaw_rad) + ay * cosf(yaw_rad);
+    a_world[2] = 0;
 
-    for (int i = 0; i < 3; i++)
+    // 4. 积分更新速度和位置（仅xy）
+    for (int i = 0; i < 2; i++)
     {
-        ins->velocity[i] += accel_world[i] * ins->dt;
+        ins->velocity[i] += a_world[i] * ins->dt;
         ins->position[i] += ins->velocity[i] * ins->dt;
     }
+
+    // z方向不变
+    ins->velocity[2] = 0;
+    ins->position[2] = 0;
 }
 
 /* ===================== 调试输出函数 ===================== */
@@ -298,9 +254,6 @@ void print_gyro_data(void)
 {
     char buffer[128];
     sprintf(buffer, "Accel: X=%.4f Y=%.4f Z=%.4f g\r\n", gyro_data.accel_x, gyro_data.accel_y, gyro_data.accel_z);
-    uart_write_string(WRITE_UART, buffer);
-
-    sprintf(buffer, "Temp: %.2f °C\r\n", gyro_data.temp);
     uart_write_string(WRITE_UART, buffer);
 
     sprintf(buffer, "Gyro: X=%.2f Y=%.2f Z=%.2f °/s\r\n", gyro_data.gyro_x, gyro_data.gyro_y, gyro_data.gyro_z);
@@ -313,11 +266,6 @@ void print_gyro_data(void)
 void INS_PrintData(INS_System *ins)
 {
     char buffer[128];
-    sprintf(buffer, "Attitude: Roll=%.2f Pitch=%.2f Yaw=%.2f °\r\n",
-            ins->euler_angles[0] * 180.0f / M_PI,
-            ins->euler_angles[1] * 180.0f / M_PI,
-            ins->euler_angles[2] * 180.0f / M_PI);
-    uart_write_string(WRITE_UART, buffer);
 
     sprintf(buffer, "Position: X=%.2f Y=%.2f Z=%.2f m\r\n",
             ins->position[0], ins->position[1], ins->position[2]);
