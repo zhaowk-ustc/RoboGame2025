@@ -1,6 +1,7 @@
 #ifndef ROBOARM_MOTION_H
 #define ROBOARM_MOTION_H
 
+#include "zf_common_headfile.h"
 #include <stdio.h>
 
 // 舵机引脚定义

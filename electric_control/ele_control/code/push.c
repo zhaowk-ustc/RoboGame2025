@@ -1,7 +1,5 @@
 #include "push.h"
 
-#pragma section all "cpu0_dsram"
-
 /* ===================== 全局变量定义 ===================== */
 int16 encoder_count = 0;
 MovementMode current_mode = MODE_FORWARD;
@@ -20,10 +18,7 @@ static void print_status_info(void);
  */
 void push_init(void)
 {
-    clock_init();                   // 获取时钟频率
-    debug_init();                   // 初始化默认调试串口
-
-    initialize_hardware();          // 初始化所有硬件
+    initialize_hardware(); // 初始化所有硬件
     printf("Push module initialized.\r\n");
 }
 
@@ -32,21 +27,21 @@ void push_init(void)
  */
 void push_update(void)
 {
-    update_encoder_data();          // 更新编码器数据
+    update_encoder_data(); // 更新编码器数据
 
     // 根据当前模式处理运动
     switch (current_mode)
     {
-        case MODE_FORWARD:
-            handle_forward_movement();
-            break;
+    case MODE_FORWARD:
+        handle_forward_movement();
+        break;
 
-        case MODE_RETURN:
-            handle_return_movement();
-            break;
+    case MODE_RETURN:
+        handle_return_movement();
+        break;
     }
 
-    print_status_info();            // 输出状态信息
+    print_status_info(); // 输出状态信息
     system_delay_ms(LOOP_DELAY_MS);
 }
 
@@ -150,5 +145,3 @@ static void print_status_info(void)
     const char *mode_str = (current_mode == MODE_FORWARD) ? "Forward" : "Return";
     printf("Encoder: %6d, Mode: %s\r\n", encoder_count, mode_str);
 }
-
-#pragma section all restore
