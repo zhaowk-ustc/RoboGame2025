@@ -84,8 +84,9 @@ extern INS_System ins;
 // 初始化函数
 void guandao_init(void);
 void imu_init(void);
-void control_init(void);
+void motion_init(void);
 void INS_Init(INS_System *ins);
+void gyro_data_init(void);
 
 // 数据处理函数
 void unpack_and_analyze_imu_data(void);

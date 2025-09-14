@@ -38,14 +38,15 @@ void guandao_init(void)
 
     // 初始化导航系统
     INS_Init(&ins);
-    control_init();
+    gyro_data_init();
+    motion_init();
 
     // 初始化串口
     uart_init(WRITE_UART, UART_BAUDRATE, TC264_TX_PIN, TC264_RX_PIN);
     uart_init(READ_UART, UART_BAUDRATE, IMU_TX_PIN, IMU_RX_PIN);
     uart_rx_interrupt(READ_UART, 1);
 
-    // 初始化IMU
+    // 要先初始化UART才能初始化IMU
     imu_init();
 
     uart_write_string(WRITE_UART, "Guandao System Initialized.\r\n");
@@ -57,7 +58,7 @@ void imu_init(void)
     uart_write_buffer(UART_3, tx_data, sizeof(tx_data));
 }
 
-void control_init(void)
+void motion_init(void)
 {
     // 初始化GPIO引脚
     const uint32 gpio_pins[8] = {
@@ -87,6 +88,19 @@ void INS_Init(INS_System *ins)
 
     ins->last_update_time = system_getval_ms();
     ins->dt = 0.0f;
+}
+
+void gyro_data_init(void)
+{
+    gyro_data.accel_x = 0.0f;
+    gyro_data.accel_y = 0.0f;
+    gyro_data.accel_z = 0.0f;
+    gyro_data.gyro_x = 0.0f;
+    gyro_data.gyro_y = 0.0f;
+    gyro_data.gyro_z = 0.0f;
+    gyro_data.roll = 0.0f;
+    gyro_data.pitch = 0.0f;
+    gyro_data.yaw = 0.0f;
 }
 
 /* ===================== 数据处理函数 ===================== */
