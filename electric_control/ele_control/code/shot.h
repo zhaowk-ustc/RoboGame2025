@@ -43,13 +43,13 @@
 extern const pwm_channel_enum channel_list[4]; // 改为声明
 
 /* ===================== 外部变量声明 ===================== */
-// 4个PWM端口的油门值数组
+// 4个PWM端口的油门值数组（1000-2000）
 extern uint16_t esc_throttle[4]; // 改为声明，去掉初始化
 
 /* ===================== 函数声明 ===================== */
 void bldc_lauch_pwm_init(void);
 void bldc_init(void);
-void bldc_set_speed(uint16_t throttle);
+void bldc_set_speed(uint16_t throttle); // 传参1000-2000
 void launch_servor_place(void);
 void launch_servor_shot(void);
 

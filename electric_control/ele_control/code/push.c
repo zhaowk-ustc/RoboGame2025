@@ -55,6 +55,7 @@ void push_set_mode(MovementMode new_mode)
     encoder_clear_count(ENCODER_MODULE);
     printf("Mode changed to: %s\r\n",
            (new_mode == MODE_FORWARD) ? "Forward" : "Return");
+    push_update();
 }
 
 /**

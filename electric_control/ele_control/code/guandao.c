@@ -40,8 +40,8 @@ void guandao_init(void)
     uart_init(READ_UART, UART_BAUDRATE, IMU_TX_PIN, IMU_RX_PIN);
 
     // 要先初始化UART才能初始化IMU
-    //imu_init();
-    //uart_write_string(WRITE_UART, "Guandao System Initialized.\r\n");
+    // imu_init();
+    // uart_write_string(WRITE_UART, "Guandao System Initialized.\r\n");
 }
 
 void imu_init(void)
