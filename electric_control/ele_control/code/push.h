@@ -13,7 +13,7 @@
 
 /* ===================== 运动控制参数 ===================== */
 #define TARGET_POSITION 3000 // 目标位置（编码器计数）
-#define MOVE_SPEED 6000       // PWM占空比（速度）
+#define MOVE_SPEED 6000      // PWM占空比（速度）
 #define DIRECTION_FORWARD GPIO_HIGH
 #define DIRECTION_BACKWARD GPIO_LOW
 
@@ -23,8 +23,9 @@
 
 /* ===================== 类型定义 ===================== */
 
-#define MODE_FORWARD 0
-#define MODE_RETURN  1
+#define MODE_STOP 0
+#define MODE_FORWARD 1
+#define MODE_RETURN 2
 
 typedef uint8_t MovementMode;
 
@@ -33,6 +34,7 @@ extern int16 encoder_count;
 extern MovementMode current_mode;
 
 /* ===================== 函数声明 ===================== */
+
 void push_init(void);
 void push_update(void);
 void push_set_mode(MovementMode new_mode);

@@ -108,7 +108,10 @@ static int on_tlv_callback(uint8_t t, const uint8_t *v, uint8_t l, void *user)
     case VAR_BASE_MOVE_FORWARD: // 0x34
         // 底盘前进 (4字节)
         {
-            set_motion(&PATTERN_FRONT);
+            float value;
+            data_read_f32le(v, 4, &value);
+            set_motion(&PATTERN_FRONT, value);
+            s
         }
         break;
     case VAR_TEST_VAR_F32: // 0x5D
@@ -138,7 +141,9 @@ static int on_tlv_callback(uint8_t t, const uint8_t *v, uint8_t l, void *user)
     case VAR_BASE_STOP: // 0x7B
         // 底盘停止 (1字节)
         {
-            set_motion(&PATTERN_STOP);
+            float value;
+            data_read_f32le(v, 4, &value);
+            set_motion(&PATTERN_STOP, value);
         }
         break;
     case VAR_DART_LAUNCH: // 0x90
@@ -162,7 +167,9 @@ static int on_tlv_callback(uint8_t t, const uint8_t *v, uint8_t l, void *user)
     case VAR_BASE_MOVE_LEFT: // 0xC6
         // 底盘左移 (4字节)
         {
-            set_motion(&PATTERN_LEFT);
+            float value;
+            data_read_f32le(v, 4, &value);
+            set_motion(&PATTERN_LEFT, value);
         }
         break;
     case VAR_HEARTBEAT: // 0xD1
@@ -185,7 +192,9 @@ static int on_tlv_callback(uint8_t t, const uint8_t *v, uint8_t l, void *user)
     case VAR_BASE_ROTATE_YAW: // 0xE8
         // 底盘偏航旋转 (4字节)
         {
-            set_motion(&PATTERN_CW); // 顺时针转动
+            float value;
+            data_read_f32le(v, 4, &value);
+            set_motion(&PATTERN_CW, value); // 顺时针转动
         }
         break;
     case VAR_GRIPPER_GRASP: // 0xEE

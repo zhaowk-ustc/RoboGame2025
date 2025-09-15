@@ -94,7 +94,7 @@ void parse_gyro_data(uint8 *data, uint8 type);
 uint8 checksum(uint8 *data, uint8 len, uint8 sum);
 
 // 运动控制函数
-void set_motion(const MotorPattern *pattern);
+void set_motion(const MotorPattern *pattern, float speed);
 
 // 导航算法函数
 void INS_UpdatePosition(INS_System *ins, GyroData *data);

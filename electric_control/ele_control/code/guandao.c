@@ -36,7 +36,7 @@ void guandao_init(void)
     motion_init();
 
     // 初始化串口
-    uart_init(WRITE_UART, UART_BAUDRATE, TC264_TX_PIN, TC264_RX_PIN);
+    // uart_init(WRITE_UART, UART_BAUDRATE, TC264_TX_PIN, TC264_RX_PIN);
     uart_init(READ_UART, UART_BAUDRATE, IMU_TX_PIN, IMU_RX_PIN);
 
     // 要先初始化UART才能初始化IMU
@@ -178,7 +178,7 @@ uint8 checksum(uint8 *data, uint8 len, uint8 sum)
 }
 
 /* ===================== 运动控制函数 ===================== */
-void set_motion(const MotorPattern *pattern)
+void set_motion(const MotorPattern *pattern, float speed)
 {
     const uint32 pins[8] = {
         FRONT_LEFT_PIN1, FRONT_LEFT_PIN2,
@@ -198,19 +198,27 @@ void set_motion(const MotorPattern *pattern)
         if (pattern->in[i] != PATTERN_BACK.in[i])
             is_back = 0;
     }
+    if (speed < 0)
+    {
+        speed = 0;
+    }
+    if (speed > 1)
+    {
+        speed = 1;
+    }
     if (is_front || is_back)
     {
-        pwm_set_duty(FRONT_LEFT_PWM, 4000);
-        pwm_set_duty(FRONT_RIGHT_PWM, 4000);
-        pwm_set_duty(BACK_LEFT_PWM, 4000);
-        pwm_set_duty(BACK_RIGHT_PWM, 4000);
+        pwm_set_duty(FRONT_LEFT_PWM, speed * 4000);
+        pwm_set_duty(FRONT_RIGHT_PWM, speed * 4000);
+        pwm_set_duty(BACK_LEFT_PWM, speed * 4000);
+        pwm_set_duty(BACK_RIGHT_PWM, speed * 4000);
     }
     else
     {
-        pwm_set_duty(FRONT_LEFT_PWM, 5250);
-        pwm_set_duty(FRONT_RIGHT_PWM, 5250);
-        pwm_set_duty(BACK_LEFT_PWM, 3400);
-        pwm_set_duty(BACK_RIGHT_PWM, 3400);
+        pwm_set_duty(FRONT_LEFT_PWM, speed * 5250);
+        pwm_set_duty(FRONT_RIGHT_PWM, speed * 5250);
+        pwm_set_duty(BACK_LEFT_PWM, speed * 3400);
+        pwm_set_duty(BACK_RIGHT_PWM, speed * 3400);
     }
 }
 
