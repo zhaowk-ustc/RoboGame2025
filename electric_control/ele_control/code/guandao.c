@@ -3,11 +3,9 @@
 #pragma section all "cpu0_dsram"
 
 /* ===================== 全局变量定义 ===================== */
-uint8 fifo_get_data[GYRO_DATA_BUFFER_SIZE];
 uint8 raw_packet[GYRO_PACKET_SIZE];
 uint8 packet_index = 0;
 uint8 get_data = 0;
-uint32 fifo_data_count = 0;
 
 GyroData gyro_data;
 INS_System ins;
@@ -32,10 +30,6 @@ const MotorPattern PATTERN_STOP = {{0, 0, 0, 0, 0, 0, 0, 0}};
 /* ===================== 初始化函数 ===================== */
 void guandao_init(void)
 {
-
-    // 初始化FIFO
-    fifo_init(&uart_data_fifo, FIFO_DATA_8BIT, fifo_get_data, GYRO_DATA_BUFFER_SIZE);
-
     // 初始化导航系统
     INS_Init(&ins);
     gyro_data_init();
@@ -44,12 +38,10 @@ void guandao_init(void)
     // 初始化串口
     uart_init(WRITE_UART, UART_BAUDRATE, TC264_TX_PIN, TC264_RX_PIN);
     uart_init(READ_UART, UART_BAUDRATE, IMU_TX_PIN, IMU_RX_PIN);
-    uart_rx_interrupt(READ_UART, 1);
 
     // 要先初始化UART才能初始化IMU
-    imu_init();
-
-    uart_write_string(WRITE_UART, "Guandao System Initialized.\r\n");
+    //imu_init();
+    //uart_write_string(WRITE_UART, "Guandao System Initialized.\r\n");
 }
 
 void imu_init(void)
@@ -106,42 +98,34 @@ void gyro_data_init(void)
 /* ===================== 数据处理函数 ===================== */
 void unpack_and_analyze_imu_data(void)
 {
-    uint32 fifo_data_count = fifo_used(&uart_data_fifo);
-    if (fifo_data_count > 0)
+    // 只在packet_index==0时判断0x55为包头
+    uint8 byte = uart_read_byte(READ_UART);
+    // printf("%d", byte);
+    if (packet_index == 0)
     {
-        fifo_read_buffer(&uart_data_fifo, fifo_get_data, &fifo_data_count, FIFO_READ_AND_CLEAN);
-        for (uint32 i = 0; i < fifo_data_count; i++)
+        if (byte != 0x55)
         {
-            if (fifo_get_data[i] == 0x55)
+            // 不是包头，丢弃
+            return;
+        }
+    }
+    raw_packet[packet_index++] = byte;
+    if (packet_index == GYRO_PACKET_SIZE)
+    {
+        uint8_t packet_type = raw_packet[1];
+        bool valid_packet = (packet_type == 0x51 || packet_type == 0x52 || packet_type == 0x53) &&
+                            checksum(raw_packet, GYRO_PACKET_SIZE - 1, raw_packet[GYRO_PACKET_SIZE - 1]);
+        if (valid_packet)
+        {
+            parse_gyro_data(raw_packet, packet_type);
+            if (packet_type == 0x53)
             {
-                packet_index = 0;
-            }
-            raw_packet[packet_index++] = fifo_get_data[i];
-
-            if (packet_index > GYRO_PACKET_SIZE)
-            {
-                packet_index = 0;
-                continue;
-            }
-
-            if (packet_index == GYRO_PACKET_SIZE)
-            {
-                uint8_t packet_type = raw_packet[1];
-                bool valid_packet = (packet_type == 0x51 || packet_type == 0x52 || packet_type == 0x53) &&
-                                    checksum(raw_packet, GYRO_PACKET_SIZE - 1, raw_packet[GYRO_PACKET_SIZE - 1]);
-                if (valid_packet)
-                {
-                    parse_gyro_data(raw_packet, packet_type);
-                    if (packet_type == 0x53)
-                    {
-                        print_gyro_data();
-                        INS_UpdatePosition(&ins, &gyro_data);
-                        INS_PrintData(&ins);
-                    }
-                }
-                packet_index = 0;
+                print_gyro_data();
+                INS_UpdatePosition(&ins, &gyro_data);
+                INS_PrintData(&ins);
             }
         }
+        packet_index = 0;
     }
 }
 
@@ -238,17 +222,19 @@ void INS_UpdatePosition(INS_System *ins, GyroData *data)
     ins->dt = (now - ins->last_update_time) / 1000.0f;
     ins->last_update_time = now;
 
-    // 1. 读取本体坐标系下的加速度（单位g，需转m/s^2）
-    float ax = data->accel_x * 9.8f;
-    float ay = data->accel_y * 9.8f;
+    // 1. 读取本体坐标系下的加速度（单位g，需转m/s^2），只保留小数点后三位
+    float ax = (float)((int)(data->accel_x * 1000)) / 1000.0f * 9.8f;
+    float ay = (float)((int)(data->accel_y * 1000)) / 1000.0f * 9.8f;
     // 2. 获取当前偏航角yaw（单位：度，需转弧度）
     float yaw_rad = data->yaw * M_PI / 180.0f;
 
     // 3. 坐标变换：本体加速度转到世界坐标系（地面xy）
     float a_world[3];
+    float c = cosf(yaw_rad);
+    float s = sinf(yaw_rad);
 
-    a_world[0] = ax * cosf(yaw_rad) - ay * sinf(yaw_rad);
-    a_world[1] = ax * sinf(yaw_rad) + ay * cosf(yaw_rad);
+    a_world[0] = ax * c - ay * s;
+    a_world[1] = ax * s + ay * c;
     a_world[2] = 0;
 
     // 4. 积分更新速度和位置（仅xy）
@@ -261,6 +247,17 @@ void INS_UpdatePosition(INS_System *ins, GyroData *data)
     // z方向不变
     ins->velocity[2] = 0;
     ins->position[2] = 0;
+
+    // 调试输出：打印dt、a_world、velocity、position
+    char debug_buffer[256];
+    sprintf(debug_buffer, "[DEBUG] dt=%.6f\r\n", ins->dt);
+    uart_write_string(WRITE_UART, debug_buffer);
+    sprintf(debug_buffer, "[DEBUG] a_world: X=%.6f Y=%.6f Z=%.6f\r\n", a_world[0], a_world[1], a_world[2]);
+    uart_write_string(WRITE_UART, debug_buffer);
+    sprintf(debug_buffer, "[DEBUG] yaw_rad = %.6f\r\n", yaw_rad);
+    uart_write_string(WRITE_UART, debug_buffer);
+    sprintf(debug_buffer, "[DEBUG] cos = %.6f sin = %.6f\r\n", c, s);
+    uart_write_string(WRITE_UART, debug_buffer);
 }
 
 /* ===================== 调试输出函数 ===================== */

@@ -33,7 +33,7 @@
 #define GYRO_PACKET_SIZE 11
 
 #ifndef M_PI
-#define M_PI 3.14159265358979323846f
+#define M_PI 3.1416f
 #endif
 
 /* ===================== 类型定义 ===================== */
@@ -48,7 +48,7 @@ typedef struct
     float gyro_z;
     float roll;
     float pitch;
-    float yaw;
+    float yaw; // 顺时针转，yaw角减小
 } GyroData;
 
 // 惯性导航系统结构体
