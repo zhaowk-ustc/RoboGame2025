@@ -25,7 +25,7 @@ typedef struct
 } response_buffer_t;
 
 // 全局响应缓存
-static response_buffer_t g_response_buffer = {{0}, 0};
+static response_buffer_t g_response_buffer = { {0}, 0 };
 
 // 每个响应项的内联存储（最长4字节）
 static uint8_t g_resp_storage[16][4];
@@ -37,7 +37,7 @@ static uint8_t g_resp_storage[16][4];
  * @param data_len 数据长度（最大4）
  * @return 0成功，-1失败
  */
-static int add_response_to_buffer(uint8_t var_id, const void *data_ptr, uint8_t data_len)
+static int add_response_to_buffer(uint8_t var_id, const void* data_ptr, uint8_t data_len)
 {
     if (!data_ptr || data_len == 0 || data_len > 4)
     {
@@ -62,9 +62,9 @@ static int add_response_to_buffer(uint8_t var_id, const void *data_ptr, uint8_t 
 }
 
 /** TLV解析回调函数 */
-static int on_tlv_callback(uint8_t t, const uint8_t *v, uint8_t l, void *user)
+static int on_tlv_callback(uint8_t t, const uint8_t* v, uint8_t l, void* user)
 {
-    parsed_message_t *msg = (parsed_message_t *)user;
+    parsed_message_t* msg = (parsed_message_t*)user;
 
     if (!msg || msg->var_count >= 16)
     {
@@ -79,8 +79,94 @@ static int on_tlv_callback(uint8_t t, const uint8_t *v, uint8_t l, void *user)
 
     switch (t)
     {
-    case VAR_FRICTION_WHEEL_SPEED: // 0x01
-        // 摩擦轮速度 (4字节)
+        case VAR_BASE_MOVE_BACKWARD: // 0xA3
+            // 底盘后退 (4字节)
+        {
+            float value = 0.0f;
+            if (data_read_f32le(v, 4, &value) == DATA_OK)
+            {
+                set_motion(&PATTERN_BACK, value);
+            }
+        }
+        break;
+
+        case VAR_BASE_MOVE_FORWARD: // 0x34
+            // 底盘前进 (4字节)
+        {
+            float value;
+            data_read_f32le(v, 4, &value);
+            set_motion(&PATTERN_FRONT, value);
+        }
+        break;
+
+        case VAR_BASE_MOVE_LEFT: // 0xC6
+            // 底盘左移 (4字节)
+        {
+            float value;
+            data_read_f32le(v, 4, &value);
+            set_motion(&PATTERN_LEFT, value);
+        }
+        break;
+
+        case VAR_BASE_MOVE_RIGHT: // 0x93
+            // 底盘右移 (4字节)
+        {
+            float value = 0.0f;
+            if (data_read_f32le(v, 4, &value) == DATA_OK)
+            {
+                set_motion(&PATTERN_RIGHT, value);
+            }
+        }
+        break;
+
+        case VAR_BASE_ROTATE_YAW: // 0xE8
+            // 底盘偏航旋转 (4字节)
+        {
+            float value;
+            data_read_f32le(v, 4, &value);
+            set_motion(&PATTERN_CW, value); // 顺时针转动
+        }
+        break;
+
+        case VAR_BASE_STOP: // 0x7B
+            // 底盘停止 (1字节)
+        {
+            float value;
+            data_read_f32le(v, 4, &value);
+            set_motion(&PATTERN_STOP, value);
+        }
+        break;
+
+        case VAR_DART_PUSH_BACKWARD: // 0x5D
+            // 飞镖后退 (1字节)
+        {
+            push_set_mode(MODE_RETURN);
+        }
+        break;
+
+        case VAR_DART_PUSH_FORWARD: // 0x49
+            // 飞镖前推/发射 (1字节)
+        {
+            float value = 0;
+            launch_servor_shot();
+            push_set_mode(MODE_FORWARD);
+            bldc_set_speed(value);
+        }
+        break;
+
+        case VAR_DART_PUSH_STOP: // 0x64
+            // 飞镖推送停止 (1字节)
+        {
+            push_set_mode(MODE_STOP);
+        }
+        break;
+
+        case VAR_DATA_ERROR: // 0x6A
+            // 数据错误 (1字节)
+            break;
+
+        case VAR_FRICTION_WHEEL_SPEED: // 0x01
+            // 摩擦轮速度 (4字节)
         {
             float value = 0;
             if (data_read_f32le(v, 4, &value) == DATA_OK)
@@ -90,121 +176,84 @@ static int on_tlv_callback(uint8_t t, const uint8_t *v, uint8_t l, void *user)
             }
         }
         break;
-    case VAR_DART_BACKWARD: // 0x02
-        // 飞镖后退 (1字节)
-        {
-            push_set_mode(MODE_RETURN);
-        }
-        break;
-    case VAR_GRIPPER_RELEASE: // 0x04
-        // 夹爪释放 (1字节)
-        {
-            pwm_set_duty(GRIPPER_PWM, GRIPPER_OPEN);
-        }
-        break;
-    case VAR_GRIPPER_TAG_Y: // 0x15
-        // 夹爪标签Y坐标 (4字节)
-        break;
-    case VAR_BASE_MOVE_FORWARD: // 0x34
-        // 底盘前进 (4字节)
-        {
-            float value;
-            data_read_f32le(v, 4, &value);
-            set_motion(&PATTERN_FRONT, value);
-            s
-        }
-        break;
-    case VAR_TEST_VAR_F32: // 0x5D
-                           // 测试变量浮点数 (4字节) - 把值加0.1再发回
-    {
-        float value;
-        if (data_read_f32le(v, 4, &value) == DATA_OK)
-        {
-            value += 0.1f; // 加0.1
-            add_response_to_buffer(VAR_TEST_VAR_F32, &value, 4);
-        }
-    }
-    break;
-    case VAR_TEST_VAR_U8: // 0x67
-                          // 测试变量8位整数 (1字节) - 把值加1再发回
-    {
-        uint8_t value = v[0] + 1; // 加1
-        add_response_to_buffer(VAR_TEST_VAR_U8, &value, 1);
-    }
-    break;
-    case VAR_GRIPPER_TAG_X: // 0x69
-        // 夹爪标签X坐标 (4字节)
-        break;
-    case VAR_DATA_ERROR: // 0x6A
-        // 数据错误 (1字节)
-        break;
-    case VAR_BASE_STOP: // 0x7B
-        // 底盘停止 (1字节)
-        {
-            float value;
-            data_read_f32le(v, 4, &value);
-            set_motion(&PATTERN_STOP, value);
-        }
-        break;
-    case VAR_DART_LAUNCH: // 0x90
-        // 飞镖发射 (1字节)
-        {
-            float value = 0;
-            launch_servor_shot();
-            push_set_mode(MODE_FORWARD);
-            bldc_set_speed(value);
-        }
-        break;
-    case VAR_FRICTION_WHEEL_STOP: // 0xA6
-        // 摩擦轮停止 (1字节)
-        {
-            bldc_set_speed(1000);
-        }
-        break;
-    case VAR_GRIPPER_TAG_Z: // 0xC4
-        // 夹爪标签Z坐标 (4字节)
-        break;
-    case VAR_BASE_MOVE_LEFT: // 0xC6
-        // 底盘左移 (4字节)
-        {
-            float value;
-            data_read_f32le(v, 4, &value);
-            set_motion(&PATTERN_LEFT, value);
-        }
-        break;
-    case VAR_HEARTBEAT: // 0xD1
-        // 心跳包 (1字节)
-        break;
-    case VAR_FRICTION_WHEEL_START: // 0xDE
-        // 摩擦轮启动 (1字节)
+
+        case VAR_FRICTION_WHEEL_START: // 0xDE
+            // 摩擦轮启动 (1字节)
         {
             bldc_init();
         }
         break;
-    case VAR_TEST_VAR_U16: // 0xE6
-                           // 测试变量16位整数 (2字节) - 把值加10再发回
-    {
-        uint16_t value = v[0] | (v[1] << 8); // 小端序读取
-        value += 10;                         // 加10
-        add_response_to_buffer(VAR_TEST_VAR_U16, &value, 2);
-    }
-    break;
-    case VAR_BASE_ROTATE_YAW: // 0xE8
-        // 底盘偏航旋转 (4字节)
+
+        case VAR_FRICTION_WHEEL_STOP: // 0xA6
+            // 摩擦轮停止 (1字节)
         {
-            float value;
-            data_read_f32le(v, 4, &value);
-            set_motion(&PATTERN_CW, value); // 顺时针转动
+            bldc_set_speed(1000);
         }
         break;
-    case VAR_GRIPPER_GRASP: // 0xEE
-        // 夹爪抓取 (1字节)
+
+        case VAR_GRIPPER_GRASP: // 0xEE
+            // 夹爪抓取 (1字节)
         {
             pwm_set_duty(GRIPPER_PWM, GRIPPER_CLOSE);
         }
         break;
-    default:
-        // 未知变量类型 - 添加错误响应到缓存中
+
+        case VAR_GRIPPER_RELEASE: // 0x04
+            // 夹爪释放 (1字节)
+        {
+            pwm_set_duty(GRIPPER_PWM, GRIPPER_OPEN);
+        }
+        break;
+
+        case VAR_GRIPPER_TAG_X: // 0x69
+            // 夹爪标签X坐标 (4字节)
+            break;
+
+        case VAR_GRIPPER_TAG_Y: // 0x15
+            // 夹爪标签Y坐标 (4字节)
+            break;
+
+        case VAR_GRIPPER_TAG_Z: // 0xC4
+            // 夹爪标签Z坐标 (4字节)
+            break;
+
+        case VAR_HEARTBEAT: // 0xD1
+        {
+            add_response_to_buffer(VAR_HEARTBEAT, v, 1);
+        }
+        break;
+
+        case VAR_TEST_VAR_F32: // 0x88
+            // 测试变量浮点数 (4字节) - 把值加0.1再发回
+        {
+            float value;
+            if (data_read_f32le(v, 4, &value) == DATA_OK)
+            {
+                value += 0.1f; // 加0.1
+                add_response_to_buffer(VAR_TEST_VAR_F32, &value, 4);
+            }
+        }
+        break;
+
+        case VAR_TEST_VAR_U16: // 0xE6
+            // 测试变量16位整数 (2字节) - 把值加10再发回
+        {
+            uint16_t value = (uint16_t)(v[0] | ((uint16_t)v[1] << 8)); // 小端序读取
+            value = (uint16_t)(value + 10);
+            add_response_to_buffer(VAR_TEST_VAR_U16, &value, 2);
+        }
+        break;
+
+        case VAR_TEST_VAR_U8: // 0x67
+            // 测试变量8位整数 (1字节) - 把值加1再发回
+        {
+            uint8_t value = (uint8_t)(v[0] + 1);
+            add_response_to_buffer(VAR_TEST_VAR_U8, &value, 1);
+        }
+        break;
+
+        default:
+            // 未知变量类型 - 添加错误响应到缓存中
         {
             uint8_t value = t;
             add_response_to_buffer(VAR_DATA_ERROR, &value, 1);
@@ -212,10 +261,11 @@ static int on_tlv_callback(uint8_t t, const uint8_t *v, uint8_t l, void *user)
         break;
     }
 
+
     return 0; // 继续解析
 }
 
-static parser_status_t parse_complete_frame(const uint8_t *frame, size_t frame_len, parsed_message_t *msg)
+static parser_status_t parse_complete_frame(const uint8_t* frame, size_t frame_len, parsed_message_t* msg)
 {
     // 初始化消息结构
     memset(msg, 0, sizeof(parsed_message_t));
@@ -224,19 +274,19 @@ static parser_status_t parse_complete_frame(const uint8_t *frame, size_t frame_l
     memset(&g_response_buffer, 0, sizeof(g_response_buffer));
 
     // 解析帧
-    uint8_t frame_data[PCMCU_MAX_DATA_LEN] = {0};
+    uint8_t frame_data[PCMCU_MAX_DATA_LEN] = { 0 };
     size_t frame_data_size = 0;
     pcmcu_parse_frame_data(frame, frame_len,
-                           frame_data, PCMCU_MAX_DATA_LEN, &frame_data_size,
-                           &msg->version, &msg->sequence);
+        frame_data, PCMCU_MAX_DATA_LEN, &frame_data_size,
+        &msg->version, &msg->sequence);
 
     // 解析TLV变量
     uint8_t decoded_msg_type = 0;
     uint8_t decoded_version = 0;
 
     int decode_result = data_decode(frame_data, frame_data_size,
-                                    &decoded_msg_type, &decoded_version,
-                                    on_tlv_callback, msg);
+        &decoded_msg_type, &decoded_version,
+        on_tlv_callback, msg);
 
     if (decode_result < 0)
     {
@@ -262,9 +312,9 @@ static parser_status_t parse_complete_frame(const uint8_t *frame, size_t frame_l
 }
 
 /** 帧回调函数，用于处理解析出的完整帧 */
-static int on_frame_callback(const uint8_t *frame, size_t frame_len, void *user)
+static int on_frame_callback(const uint8_t* frame, size_t frame_len, void* user)
 {
-    data_parser_t *parser = (data_parser_t *)user;
+    data_parser_t* parser = (data_parser_t*)user;
     if (!parser || !frame)
         return -1;
 
@@ -272,12 +322,12 @@ static int on_frame_callback(const uint8_t *frame, size_t frame_len, void *user)
     parser_status_t status = parse_complete_frame(frame, frame_len, &parser->current_msg);
     switch (status)
     {
-    case PARSER_OK:
-        // 解析成功，当前消息已更新
-        break;
-    default:
-        // 其他错误
-        break;
+        case PARSER_OK:
+            // 解析成功，当前消息已更新
+            break;
+        default:
+            // 其他错误
+            break;
     }
 
     return 0; // 继续解析
@@ -309,7 +359,7 @@ parser_status_t parser_feed_byte(uint8_t byte)
     return parser_feed_stream(&byte, 1);
 }
 
-parser_status_t parser_feed_stream(const uint8_t *data, size_t len)
+parser_status_t parser_feed_stream(const uint8_t* data, size_t len)
 {
     if (!data && len > 0)
     {
