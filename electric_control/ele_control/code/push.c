@@ -2,13 +2,14 @@
 
 /* ===================== 全局变量定义 ===================== */
 int16 encoder_count = 0;
-MovementMode current_mode = MODE_FORWARD;
+MovementMode current_mode = MODE_STOP;
 
 /* ===================== 私有函数声明 ===================== */
 static void initialize_hardware(void);
 static void update_encoder_data(void);
 static void handle_forward_movement(void);
 static void handle_return_movement(void);
+static void handle_stop(void);
 static void print_status_info(void);
 
 /* ===================== 公有函数实现 ===================== */
@@ -30,12 +31,15 @@ void push_update(void)
     update_encoder_data(); // 更新编码器数据
 
     // 根据当前模式处理运动
+
     switch (current_mode)
     {
+    case MODE_STOP:
+        handle_stop();
+        break;
     case MODE_FORWARD:
         handle_forward_movement();
         break;
-
     case MODE_RETURN:
         handle_return_movement();
         break;
@@ -49,12 +53,25 @@ void push_update(void)
  * @brief 设置运动模式
  * @param new_mode 新的运动模式
  */
+
 void push_set_mode(MovementMode new_mode)
 {
     current_mode = new_mode;
     encoder_clear_count(ENCODER_MODULE);
-    printf("Mode changed to: %s\r\n",
-           (new_mode == MODE_FORWARD) ? "Forward" : "Return");
+    const char *mode_str = "Unknown";
+    switch (new_mode)
+    {
+    case MODE_STOP:
+        mode_str = "Stop";
+        break;
+    case MODE_FORWARD:
+        mode_str = "Forward";
+        break;
+    case MODE_RETURN:
+        mode_str = "Return";
+        break;
+    }
+    printf("Mode changed to: %s\r\n", mode_str);
     push_update();
 }
 
@@ -114,9 +131,8 @@ static void handle_forward_movement(void)
     // 检查是否到达目标位置
     if (encoder_count <= (-TARGET_POSITION))
     {
-        push_set_mode(MODE_RETURN);
-        printf("Reached target position, starting return.\r\n");
-        system_delay_ms(ENDPOINT_DELAY_MS);
+        current_mode = MODE_STOP;
+        printf("Reached target position, stop.\r\n");
     }
 }
 
@@ -132,17 +148,35 @@ static void handle_return_movement(void)
     // 检查是否退回起点
     if (encoder_count >= TARGET_POSITION)
     {
-        push_set_mode(MODE_FORWARD);
+        current_mode = MODE_STOP;
         printf("Returned to start position.\r\n");
-        system_delay_ms(ENDPOINT_DELAY_MS);
     }
 }
 
 /**
  * @brief 打印状态信息
  */
+
+static void handle_stop(void)
+{
+    pwm_set_duty(SPEED_PWM, 0);
+    // 可选：可添加其他停止时的处理逻辑
+}
+
 static void print_status_info(void)
 {
-    const char *mode_str = (current_mode == MODE_FORWARD) ? "Forward" : "Return";
+    const char *mode_str = "Unknown";
+    switch (current_mode)
+    {
+    case MODE_STOP:
+        mode_str = "Stop";
+        break;
+    case MODE_FORWARD:
+        mode_str = "Forward";
+        break;
+    case MODE_RETURN:
+        mode_str = "Return";
+        break;
+    }
     printf("Encoder: %6d, Mode: %s\r\n", encoder_count, mode_str);
 }
