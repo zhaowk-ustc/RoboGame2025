@@ -47,7 +47,7 @@ extern const pwm_channel_enum channel_list[4]; // 改为声明
 extern uint16_t esc_throttle[4]; // 改为声明，去掉初始化
 
 /* ===================== 函数声明 ===================== */
-void bldc_lauch_pwm_init(void);
+void shot_init(void);
 void bldc_init(void);
 void bldc_set_speed(uint16_t throttle); // 传参1000-2000
 void launch_servor_place(void);

@@ -9,7 +9,7 @@ ServoPositions current_pos = {
     .shouwan = GRIP_SHOUWAN,
     .gripper = GRIPPER_OPEN};
 
-void initialize_pwm(void)
+void roboarm_init(void)
 {
     pwm_init(DI_PWM, 50, 0);
     pwm_init(DABI_PWM, 50, 0);
