@@ -49,7 +49,7 @@ typedef struct
 
 extern ServoPositions current_pos;
 
-void initialize_pwm(void);
+void roboarm_init(void);
 void set_all_pwm(int duty);
 void test_servo_positions(void);
 void move_servo_smoothly(int *current_pos, int target_pos, int pwm_pin);
