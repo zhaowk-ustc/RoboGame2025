@@ -40,6 +40,14 @@
 // 本例程是开源库空工程 可用作移植或者测试各类内外设
 // 本例程是开源库空工程 可用作移植或者测试各类内外设
 
+#include "communicate/parser.h"
+#include "communicate/sender.h"
+
+sender_status_t sender_callback(const uint8_t* data, size_t len, void* user_data)
+{
+    uart_write_buffer(UART_0, data, len);
+    return SENDER_OK;
+}
 // **************************** 代码区域 ****************************
 int core0_main(void)
 {
@@ -47,6 +55,8 @@ int core0_main(void)
     debug_init();                   // 初始化默认调试串口
     // 此处编写用户代码 例如外设初始化代码等
 
+    sender_init(sender_callback, NULL);
+    parser_init();
 
 
 
@@ -55,9 +65,21 @@ int core0_main(void)
     while (TRUE)
     {
         // 此处编写需要循环执行的代码
-
-
-
+        uint8_t read_data[64];
+        size_t fifo_data_size = 0;
+        fifo_data_size = debug_read_ring_buffer(read_data, 32);
+        if (fifo_data_size > 0)
+        {
+            parser_feed_stream(read_data, fifo_data_size);
+//            printf("receive %d bytes data:\r\n", fifo_data_size);
+//            for (size_t i = 0; i < fifo_data_size; i++)
+//            {
+//                printf("%02X ", read_data[i]);
+//            }
+//            printf("\r\n");
+        }
+//        system_delay_ms(100);
+//        sender_send_u8(VAR_HEARTBEAT, 0x00);
 
         // 此处编写需要循环执行的代码
     }
