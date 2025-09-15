@@ -79,54 +79,82 @@ static int on_tlv_callback(uint8_t t, const uint8_t* v, uint8_t l, void* user)
 
     switch (t)
     {
-        case VAR_BASE_MOVE_BACKWARD: // 0xA3
-            // 底盘后退 (4字节)
+        case VAR_BASE_MOVE_BACKWARD_FAST:
+            // 底盘后退
         {
-            float value = 0.0f;
-            if (data_read_f32le(v, 4, &value) == DATA_OK)
-            {
-                set_motion(&PATTERN_BACK, value);
-            }
+            set_motion(&PATTERN_BACK, 1);
         }
         break;
 
-        case VAR_BASE_MOVE_FORWARD: // 0x34
-            // 底盘前进 (4字节)
+        case VAR_BASE_MOVE_BACKWARD_SLOW:
+            // 底盘慢速后退
         {
-            float value;
-            data_read_f32le(v, 4, &value);
-            set_motion(&PATTERN_FRONT, value);
+            set_motion(&PATTERN_BACK, 0.5f);
         }
         break;
 
-        case VAR_BASE_MOVE_LEFT: // 0xC6
-            // 底盘左移 (4字节)
+        case VAR_BASE_MOVE_FORWARD_FAST:
+            // 底盘前进
         {
-            float value;
-            data_read_f32le(v, 4, &value);
-            set_motion(&PATTERN_LEFT, value);
+            set_motion(&PATTERN_FRONT, 1);
+        }
+        break;
+        case VAR_BASE_MOVE_FORWARD_SLOW:
+            // 底盘慢速前进
+        {
+            set_motion(&PATTERN_FRONT, 0.5f);
         }
         break;
 
-        case VAR_BASE_MOVE_RIGHT: // 0x93
-            // 底盘右移 (4字节)
+        case VAR_BASE_MOVE_LEFT_FAST:
+            // 底盘左移
         {
-            float value = 0.0f;
-            if (data_read_f32le(v, 4, &value) == DATA_OK)
-            {
-                set_motion(&PATTERN_RIGHT, value);
-            }
+            set_motion(&PATTERN_LEFT, 1);
+        }
+        break;
+        case VAR_BASE_MOVE_LEFT_SLOW:
+            // 底盘慢速左移
+        {
+            set_motion(&PATTERN_LEFT, 0.5f);
+        }
+
+        case VAR_BASE_MOVE_RIGHT_FAST:
+            // 底盘右移
+        {
+            set_motion(&PATTERN_RIGHT, 1);
         }
         break;
 
-        case VAR_BASE_ROTATE_YAW: // 0xE8
-            // 底盘偏航旋转 (4字节)
+        case VAR_BASE_MOVE_RIGHT_SLOW:
+            // 底盘慢速右移
         {
-            float value;
-            data_read_f32le(v, 4, &value);
-            set_motion(&PATTERN_CW, value); // 顺时针转动
+            set_motion(&PATTERN_RIGHT, 0.5f);
         }
         break;
+
+        case VAR_BASE_ROTATE_CCW_FAST:
+            // 底盘偏航旋转
+        {
+            set_motion(&PATTERN_CCW, 1);
+        }
+        break;
+        case VAR_BASE_ROTATE_CCW_SLOW:
+            // 底盘偏航慢速旋转
+        {
+            set_motion(&PATTERN_CCW, 0.5f);
+        }
+        break;
+        case VAR_BASE_ROTATE_CW_FAST:
+            // 底盘顺时针旋转
+        {
+            set_motion(&PATTERN_CW, 1);
+        }
+        break;
+        case VAR_BASE_ROTATE_CW_SLOW:
+            // 底盘顺时针慢速旋转
+        {
+            set_motion(&PATTERN_CW, 0.5f);
+        }
 
         case VAR_BASE_STOP: // 0x7B
             // 底盘停止 (1字节)
