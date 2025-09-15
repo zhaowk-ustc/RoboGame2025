@@ -13,14 +13,60 @@ static data_parser_t _parser = {
 
 // ================= 内部静态变量和函数声明 =================
 
+// 响应数据缓存结构
+typedef struct
+{
+    tlv_item_t items[16];    // 最多16个响应项
+    size_t item_count;       // 当前响应项数量
+} response_buffer_t;
+
+// 全局响应缓存
+static response_buffer_t g_response_buffer = { {0}, 0 };
+
+// 每个响应项的内联存储（最长4字节）
+static uint8_t g_resp_storage[16][4];
+
+/**
+ * @brief 添加响应数据到全局缓存（内部完成拷贝）
+ * @param var_id 变量ID
+ * @param data_ptr 输入数据指针（可为局部/临时变量）
+ * @param data_len 数据长度（最大4）
+ * @return 0成功，-1失败
+ */
+static int add_response_to_buffer(uint8_t var_id, const void* data_ptr, uint8_t data_len)
+{
+    if (!data_ptr || data_len == 0 || data_len > 4)
+    {
+        return -1; // 参数非法
+    }
+    if (g_response_buffer.item_count >= 16)
+    {
+        return -1; // 缓存已满
+    }
+
+    size_t idx = g_response_buffer.item_count;
+
+    // 拷贝到内联存储，并让TLV条目指向该存储
+    memcpy(g_resp_storage[idx], data_ptr, data_len);
+
+    g_response_buffer.items[idx].var_id = var_id;
+    g_response_buffer.items[idx].data = g_resp_storage[idx];
+    g_response_buffer.items[idx].len = data_len;
+
+    g_response_buffer.item_count++;
+    return 0;
+}
+
 /** TLV解析回调函数 */
 static int on_tlv_callback(uint8_t t, const uint8_t* v, uint8_t l, void* user)
 {
     parsed_message_t* msg = (parsed_message_t*)user;
+
     if (!msg || msg->var_count >= 16)
     {
         return -1; // 参数错误或变量数组已满
     }
+
     // 将解析出的TLV添加到消息结构中
     msg->vars[msg->var_count].t = t;
     msg->vars[msg->var_count].l = l;
@@ -29,76 +75,87 @@ static int on_tlv_callback(uint8_t t, const uint8_t* v, uint8_t l, void* user)
 
     switch (t)
     {
-        case VAR_FRICTION_WHEEL_SPEED:
+        case VAR_FRICTION_WHEEL_SPEED: // 0x01
             // 摩擦轮速度 (4字节)
             break;
-        case VAR_DART_BACKWARD:
+        case VAR_DART_BACKWARD: // 0x02
             // 飞镖后退 (1字节)
             break;
-        case VAR_GRIPPER_RELEASE:
+        case VAR_GRIPPER_RELEASE: // 0x04
             // 夹爪释放 (1字节)
             break;
-        case VAR_GRIPPER_TAG_Y:
+        case VAR_GRIPPER_TAG_Y: // 0x15
             // 夹爪标签Y坐标 (4字节)
             break;
-        case VAR_BASE_MOVE_FORWARD:
+        case VAR_BASE_MOVE_FORWARD: // 0x34
             // 底盘前进 (4字节)
             break;
-        case VAR_TEST_VAR_F32:
-            // 测试变量浮点数 (4字节) - 把值加1再发回
-            if (l == 4)
+        case VAR_TEST_VAR_F32: // 0x5D
+            // 测试变量浮点数 (4字节) - 把值加0.1再发回
+        {
+            float value;
+            if (data_read_f32le(v, 4, &value) == DATA_OK)
             {
-                float value;
-                if (data_read_f32le(v, l, &value) == DATA_OK)
-                {
-                    sender_send_var_f32(VAR_TEST_VAR_F32, value + 0.1f);
-                }
+                value += 0.1f; // 加0.1
+                add_response_to_buffer(VAR_TEST_VAR_F32, &value, 4);
             }
-            break;
-        case VAR_TEST_VAR_U8:
+        }
+        break;
+        case VAR_TEST_VAR_U8: // 0x67
             // 测试变量8位整数 (1字节) - 把值加1再发回
-            if (l == 1)
-            {
-                uint8_t value = v[0];
-                sender_send_var_u8(VAR_TEST_VAR_U8, value + 1);
-            }
-            break;
-        case VAR_GRIPPER_TAG_X:
+        {
+            uint8_t value = v[0] + 1; // 加1
+            add_response_to_buffer(VAR_TEST_VAR_U8, &value, 1);
+        }
+        break;
+        case VAR_GRIPPER_TAG_X: // 0x69
             // 夹爪标签X坐标 (4字节)
             break;
-        case VAR_DART_LAUNCH:
+        case VAR_DATA_ERROR: // 0x6A
+            // 数据错误 (1字节)
+            break;
+        case VAR_BASE_STOP: // 0x7B
+            // 底盘停止 (1字节)
+            break;
+        case VAR_DART_LAUNCH: // 0x90
             // 飞镖发射 (1字节)
             break;
-        case VAR_FRICTION_WHEEL_STOP:
+        case VAR_FRICTION_WHEEL_STOP: // 0xA6
             // 摩擦轮停止 (1字节)
             break;
-        case VAR_GRIPPER_TAG_Z:
+        case VAR_GRIPPER_TAG_Z: // 0xC4
             // 夹爪标签Z坐标 (4字节)
             break;
-        case VAR_BASE_MOVE_LEFT:
+        case VAR_BASE_MOVE_LEFT: // 0xC6
             // 底盘左移 (4字节)
             break;
-        case VAR_FRICTION_WHEEL_START:
+        case VAR_HEARTBEAT: // 0xD1
+            // 心跳包 (1字节)
+            break;
+        case VAR_FRICTION_WHEEL_START: // 0xDE
             // 摩擦轮启动 (1字节)
             break;
-        case VAR_TEST_VAR_U16:
-            // 测试变量16位整数 (2字节) - 把值加1再发回
-            if (l == 2)
-            {
-                uint16_t value = v[0] | (v[1] << 8); // 小端序读取
-                sender_send_var_u16(VAR_TEST_VAR_U16, value + 10);
-            }
-            break;
-        case VAR_BASE_ROTATE_YAW:
+        case VAR_TEST_VAR_U16: // 0xE6
+            // 测试变量16位整数 (2字节) - 把值加10再发回
+        {
+            uint16_t value = v[0] | (v[1] << 8); // 小端序读取
+            value += 10; // 加10
+            add_response_to_buffer(VAR_TEST_VAR_U16, &value, 2);
+        }
+        break;
+        case VAR_BASE_ROTATE_YAW: // 0xE8
             // 底盘偏航旋转 (4字节)
             break;
-        case VAR_GRIPPER_GRASP:
+        case VAR_GRIPPER_GRASP: // 0xEE
             // 夹爪抓取 (1字节)
             break;
         default:
-            // 未知变量类型
-            sender_send_var_u8(VAR_DATA_ERROR, t);
-            break;
+            // 未知变量类型 - 添加错误响应到缓存中
+        {
+            uint8_t value = t;
+            add_response_to_buffer(VAR_DATA_ERROR, &value, 1);
+        }
+        break;
     }
 
     return 0; // 继续解析
@@ -108,6 +165,9 @@ static parser_status_t parse_complete_frame(const uint8_t* frame, size_t frame_l
 {
     // 初始化消息结构
     memset(msg, 0, sizeof(parsed_message_t));
+
+    // 重置全局响应缓存
+    memset(&g_response_buffer, 0, sizeof(g_response_buffer));
 
     // 解析帧
     uint8_t frame_data[PCMCU_MAX_DATA_LEN] = { 0 };
@@ -133,9 +193,15 @@ static parser_status_t parse_complete_frame(const uint8_t* frame, size_t frame_l
     msg->msg_type = decoded_msg_type;
 
     // 验证版本一致性
-    if (decoded_version != msg->version)
+    if (decoded_version != PROTOCOL_DATA_VER)
     {
         return PARSER_ERROR_DATA_ERROR;
+    }
+
+    // 一次性发送所有响应数据
+    if (g_response_buffer.item_count > 0)
+    {
+        sender_send_multiple_tlv(g_response_buffer.items, g_response_buffer.item_count);
     }
 
     return PARSER_OK;

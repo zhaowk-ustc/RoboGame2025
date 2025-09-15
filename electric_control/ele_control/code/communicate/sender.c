@@ -68,7 +68,7 @@ static sender_status_t send_data_internal(const kv_t* kvs, size_t kv_count)
     
     int frame_result = pcmcu_build_frame(_sender.sequence,
                                        _sender.send_buffer, encoded_len,
-                                       PROTOCOL_DATA_VER,
+                                       PCMCU_VERSION_DEFAULT,
                                        frame_buffer, sizeof(frame_buffer), &frame_len);
 
     if (frame_result < 0) {
