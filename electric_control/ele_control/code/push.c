@@ -6,7 +6,6 @@ MovementMode current_mode = MODE_STOP;
 
 /* ===================== 私有函数声明 ===================== */
 static void initialize_hardware(void);
-static void update_encoder_data(void);
 static void handle_forward_movement(void);
 static void handle_return_movement(void);
 static void handle_stop(void);
@@ -20,6 +19,7 @@ static void print_status_info(void);
 void push_init(void)
 {
     initialize_hardware(); // 初始化所有硬件
+    encoder_clear_count(ENCODER_MODULE);
     printf("Push module initialized.\r\n");
 }
 
@@ -28,7 +28,7 @@ void push_init(void)
  */
 void push_update(void)
 {
-    update_encoder_data(); // 更新编码器数据
+    encoder_count = encoder_get_count(ENCODER_MODULE); // 更新编码器数据
 
     // 根据当前模式处理运动
 
@@ -49,48 +49,11 @@ void push_update(void)
     system_delay_ms(LOOP_DELAY_MS);
 }
 
-/**
- * @brief 设置运动模式
- * @param new_mode 新的运动模式
- */
-
-void push_set_mode(MovementMode new_mode)
+void push_stop(void)
 {
-    current_mode = new_mode;
-    encoder_clear_count(ENCODER_MODULE);
-    const char *mode_str = "Unknown";
-    switch (new_mode)
-    {
-    case MODE_STOP:
-        mode_str = "Stop";
-        break;
-    case MODE_FORWARD:
-        mode_str = "Forward";
-        break;
-    case MODE_RETURN:
-        mode_str = "Return";
-        break;
-    }
-    printf("Mode changed to: %s\r\n", mode_str);
-    push_update();
-}
-
-/**
- * @brief 获取当前运动模式
- * @return 当前运动模式
- */
-MovementMode push_get_mode(void)
-{
-    return current_mode;
-}
-
-/**
- * @brief 获取当前编码器计数
- * @return 编码器计数值
- */
-int16 push_get_encoder_count(void)
-{
-    return encoder_count;
+    current_mode = MODE_STOP;
+    pwm_set_duty(SPEED_PWM, 0);
+    printf("Push stopped.\r\n");
 }
 
 /* ===================== 私有函数实现 ===================== */
@@ -112,45 +75,40 @@ static void initialize_hardware(void)
 }
 
 /**
- * @brief 更新编码器数据
- */
-static void update_encoder_data(void)
-{
-    encoder_count = encoder_get_count(ENCODER_MODULE);
-}
-
-/**
  * @brief 处理向前运动模式
  */
+
 static void handle_forward_movement(void)
 {
+    // 限定编码器范围
+    if (encoder_count <= -TARGET_POSITION)
+    {
+        push_stop();
+        printf("Reached negative limit, stopped.\r\n");
+        return;
+    }
+
     // 设置向前运动方向
     gpio_set_level(DIRECTION_PIN, DIRECTION_FORWARD);
     pwm_set_duty(SPEED_PWM, MOVE_SPEED);
-
-    // 检查是否到达目标位置
-    if (encoder_count <= (-TARGET_POSITION))
-    {
-        current_mode = MODE_STOP;
-        printf("Reached target position, stop.\r\n");
-    }
 }
 
 /**
  * @brief 处理返回运动模式
  */
+
 static void handle_return_movement(void)
 {
+    // 限定编码器范围
+    if (encoder_count >= 0)
+    {
+        push_stop();
+        printf("Reached positive limit, stopped.\r\n");
+        return;
+    }
     // 设置返回运动方向
     gpio_set_level(DIRECTION_PIN, DIRECTION_BACKWARD);
     pwm_set_duty(SPEED_PWM, MOVE_SPEED);
-
-    // 检查是否退回起点
-    if (encoder_count >= TARGET_POSITION)
-    {
-        current_mode = MODE_STOP;
-        printf("Returned to start position.\r\n");
-    }
 }
 
 /**

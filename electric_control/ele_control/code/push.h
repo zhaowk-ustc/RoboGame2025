@@ -37,8 +37,6 @@ extern MovementMode current_mode;
 
 void push_init(void);
 void push_update(void);
-void push_set_mode(MovementMode new_mode);
-MovementMode push_get_mode(void);
-int16 push_get_encoder_count(void);
+void push_stop(void);
 
 #endif // PUSH_H
