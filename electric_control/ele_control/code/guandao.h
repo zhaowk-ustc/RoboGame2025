@@ -28,6 +28,18 @@
 #define FRONT_RIGHT_PWM (ATOM1_CH5_P02_5)
 #define FRONT_LEFT_PWM (ATOM1_CH6_P02_6)
 
+// 档位宏定义
+#define FAST_GEAR 1
+#define SLOW_GEAR 0
+
+#define FAST_GEAR_FRONT_BACK_PWM 4000
+#define FAST_GEAR_FRONT_WHEEL_PWM 5250
+#define FAST_GEAR_BACK_WHEEL_PWM 3400
+
+#define SLOW_GEAR_FRONT_BACK_PWM 3000
+#define SLOW_GEAR_FRONT_WHEEL_PWM 3210
+#define SLOW_GEAR_BACK_WHEEL_PWM 1500
+
 #define UART_BAUDRATE (115200)
 #define GYRO_DATA_BUFFER_SIZE 128
 #define GYRO_PACKET_SIZE 11
@@ -94,7 +106,7 @@ void parse_gyro_data(uint8 *data, uint8 type);
 uint8 checksum(uint8 *data, uint8 len, uint8 sum);
 
 // 运动控制函数
-void set_motion(const MotorPattern *pattern, float speed);
+void set_motion(const MotorPattern *pattern, bool is_fast_gear);
 
 // 导航算法函数
 void INS_UpdatePosition(INS_System *ins, GyroData *data);

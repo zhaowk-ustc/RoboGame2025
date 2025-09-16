@@ -178,17 +178,20 @@ uint8 checksum(uint8 *data, uint8 len, uint8 sum)
 }
 
 /* ===================== 运动控制函数 ===================== */
-void set_motion(const MotorPattern *pattern, float speed)
+void set_motion(const MotorPattern *pattern, bool is_fast_gear)
 {
     const uint32 pins[8] = {
         FRONT_LEFT_PIN1, FRONT_LEFT_PIN2,
         FRONT_RIGHT_PIN1, FRONT_RIGHT_PIN2,
         BACK_LEFT_PIN1, BACK_LEFT_PIN2,
         BACK_RIGHT_PIN1, BACK_RIGHT_PIN2};
+
+    // 设置GPIO电平
     for (int i = 0; i < 8; i++)
     {
         gpio_set_level(pins[i], pattern->in[i] ? GPIO_HIGH : GPIO_LOW);
     }
+
     // 判断是否为前进/后退模式
     int is_front = 1, is_back = 1;
     for (int i = 0; i < 8; i++)
@@ -198,27 +201,25 @@ void set_motion(const MotorPattern *pattern, float speed)
         if (pattern->in[i] != PATTERN_BACK.in[i])
             is_back = 0;
     }
-    if (speed < 0)
-    {
-        speed = 0;
-    }
-    if (speed > 1)
-    {
-        speed = 1;
-    }
+
+    // 根据档位设置PWM占空比
     if (is_front || is_back)
     {
-        pwm_set_duty(FRONT_LEFT_PWM, speed * 4000);
-        pwm_set_duty(FRONT_RIGHT_PWM, speed * 4000);
-        pwm_set_duty(BACK_LEFT_PWM, speed * 4000);
-        pwm_set_duty(BACK_RIGHT_PWM, speed * 4000);
+        uint32_t pwm_value = is_fast_gear ? FAST_GEAR_FRONT_BACK_PWM : SLOW_GEAR_FRONT_BACK_PWM;
+        pwm_set_duty(FRONT_LEFT_PWM, pwm_value);
+        pwm_set_duty(FRONT_RIGHT_PWM, pwm_value);
+        pwm_set_duty(BACK_LEFT_PWM, pwm_value);
+        pwm_set_duty(BACK_RIGHT_PWM, pwm_value);
     }
     else
     {
-        pwm_set_duty(FRONT_LEFT_PWM, speed * 5250);
-        pwm_set_duty(FRONT_RIGHT_PWM, speed * 5250);
-        pwm_set_duty(BACK_LEFT_PWM, speed * 3400);
-        pwm_set_duty(BACK_RIGHT_PWM, speed * 3400);
+        uint32_t front_pwm = is_fast_gear ? FAST_GEAR_FRONT_WHEEL_PWM : SLOW_GEAR_FRONT_WHEEL_PWM;
+        uint32_t back_pwm = is_fast_gear ? FAST_GEAR_BACK_WHEEL_PWM : SLOW_GEAR_BACK_WHEEL_PWM;
+
+        pwm_set_duty(FRONT_LEFT_PWM, front_pwm);
+        pwm_set_duty(FRONT_RIGHT_PWM, front_pwm);
+        pwm_set_duty(BACK_LEFT_PWM, back_pwm);
+        pwm_set_duty(BACK_RIGHT_PWM, back_pwm);
     }
 }
 
