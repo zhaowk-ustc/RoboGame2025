@@ -76,212 +76,230 @@ static int on_tlv_callback(uint8_t t, const uint8_t *v, uint8_t l, void *user)
     msg->vars[msg->var_count].l = l;
     msg->vars[msg->var_count].v = v;
     msg->var_count++;
-
     switch (t)
     {
+    // ===== A =====
     case VAR_BASE_MOVE_BACKWARD_FAST:
-        // 底盘后退
-        {
-            set_motion(&PATTERN_BACK, FAST_GEAR);
-        }
+        // 底盘后退（快速）
+        set_motion(&PATTERN_BACK, FAST_GEAR);
         break;
 
     case VAR_BASE_MOVE_BACKWARD_SLOW:
-        // 底盘慢速后退
-        {
-            set_motion(&PATTERN_BACK, SLOW_GEAR);
-        }
+        // 底盘后退（慢速）
+        set_motion(&PATTERN_BACK, SLOW_GEAR);
         break;
 
     case VAR_BASE_MOVE_FORWARD_FAST:
-        // 底盘前进
-        {
-            set_motion(&PATTERN_FRONT, FAST_GEAR);
-        }
+        // 底盘前进（快速）
+        set_motion(&PATTERN_FRONT, FAST_GEAR);
         break;
+
     case VAR_BASE_MOVE_FORWARD_SLOW:
-        // 底盘慢速前进
-        {
-            set_motion(&PATTERN_FRONT, SLOW_GEAR);
-        }
+        // 底盘前进（慢速）
+        set_motion(&PATTERN_FRONT, SLOW_GEAR);
         break;
 
     case VAR_BASE_MOVE_LEFT_FAST:
-        // 底盘左移
-        {
-            set_motion(&PATTERN_LEFT, FAST_GEAR);
-        }
+        // 底盘左移（快速）
+        set_motion(&PATTERN_LEFT, FAST_GEAR);
         break;
+
     case VAR_BASE_MOVE_LEFT_SLOW:
-        // 底盘慢速左移
-        {
-            set_motion(&PATTERN_LEFT, SLOW_GEAR);
-        }
+        // 底盘左移（慢速）
+        set_motion(&PATTERN_LEFT, SLOW_GEAR);
         break;
 
     case VAR_BASE_MOVE_RIGHT_FAST:
-        // 底盘右移
-        {
-            set_motion(&PATTERN_RIGHT, FAST_GEAR);
-        }
+        // 底盘右移（快速）
+        set_motion(&PATTERN_RIGHT, FAST_GEAR);
         break;
 
     case VAR_BASE_MOVE_RIGHT_SLOW:
-        // 底盘慢速右移
-        {
-            set_motion(&PATTERN_RIGHT, SLOW_GEAR);
-        }
+        // 底盘右移（慢速）
+        set_motion(&PATTERN_RIGHT, SLOW_GEAR);
         break;
 
     case VAR_BASE_ROTATE_CCW_FAST:
-        // 底盘偏航旋转
-        {
-            set_motion(&PATTERN_CCW, FAST_GEAR);
-        }
+        // 底盘逆时针旋转（快速）
+        set_motion(&PATTERN_CCW, FAST_GEAR);
         break;
+
     case VAR_BASE_ROTATE_CCW_SLOW:
-        // 底盘偏航慢速旋转
-        {
-            set_motion(&PATTERN_CCW, SLOW_GEAR);
-        }
+        // 底盘逆时针旋转（慢速）
+        set_motion(&PATTERN_CCW, SLOW_GEAR);
         break;
+
     case VAR_BASE_ROTATE_CW_FAST:
-        // 底盘顺时针旋转
-        {
-            set_motion(&PATTERN_CW, FAST_GEAR);
-        }
+        // 底盘顺时针旋转（快速）
+        set_motion(&PATTERN_CW, FAST_GEAR);
         break;
+
     case VAR_BASE_ROTATE_CW_SLOW:
-        // 底盘顺时针慢速旋转
-        {
-            set_motion(&PATTERN_CW, SLOW_GEAR);
-        }
+        // 底盘顺时针旋转（慢速）
+        set_motion(&PATTERN_CW, SLOW_GEAR);
         break;
 
-    case VAR_BASE_STOP: // 0x7B
-                        // 底盘停止 (1字节)
-    {
+    case VAR_BASE_STOP:
+        // 底盘停止
         set_motion(&PATTERN_STOP, FALSE);
-    }
-    break;
+        break;
 
-    case VAR_DART_PUSH_BACKWARD: // 0x5D
-                                 // 飞镖后退 (1字节)
-    {
+    // ===== D =====
+    case VAR_DATA_ERROR:
+        // 数据错误（来自对端告警）；本端无需动作
+        break;
+
+    case VAR_DART_PUSH_BACKWARD_DEBUG:
+        // 飞镖后退（调试）
         current_mode = MODE_RETURN;
         push_update();
-    }
-    break;
+        break;
 
-    case VAR_DART_PUSH_FORWARD: // 0x49
-                                // 飞镖前推 (1字节)
-    {
+    case VAR_DART_PUSH_FORWARD_DEBUG:
+        // 飞镖前推（调试）
         current_mode = MODE_FORWARD;
         push_update();
-    }
-    break;
+        break;
 
-    case VAR_DART_PUSH_STOP: // 0x64
-                             // 飞镖推送停止 (1字节)
-    {
+    case VAR_DART_PUSH_ONCE_DEBUG:
+        // 飞镖单次前推（调试）
+        // TODO: 如有一次性推送 API，可替换为 push_once();
+        current_mode = MODE_FORWARD;
+        push_update();
+        // 业务上若需“单次”，上层定时/位置到点后再下发 STOP
+        break;
+
+    case VAR_DART_PUSH_RESET_DEBUG:
+        // 飞镖机构复位（调试）
+        // TODO: 如有复位 API，可调用 push_reset();
+        current_mode = MODE_RETURN;
+        push_update();
+        break;
+
+    case VAR_DART_PUSH_STOP_DEBUG:
+        // 飞镖推送停止（调试）
         current_mode = MODE_STOP;
         push_update();
-    }
-    break;
-
-    case VAR_DATA_ERROR: // 0x6A
-        // 数据错误 (1字节)
         break;
 
-    case VAR_FRICTION_WHEEL_SPEED: // 0x01
-                                   // 摩擦轮速度 (4字节)
-    {
-        float value = 0;
-        if (data_read_f32le(v, 4, &value) == DATA_OK)
-        {
-            // 设置摩擦轮速度为value
-            bldc_set_speed(value); // value值在1000-2000
-        }
-    }
-    break;
+    // ===== F =====
+    case VAR_FIRE_ONCE:
+        // 发射一次
+        // TODO: 若有射击接口，替换为 shot_fire_once() / fire_once()
+        // shot_fire_once();
+        break;
 
-    case VAR_FRICTION_WHEEL_START: // 0xDE
-                                   // 摩擦轮启动 (1字节)
-    {
+    case VAR_FRICTION_WHEEL_SPEED:
+        // 摩擦轮速度 (4字节，小端 float)
+        {
+            float value = 0.0f;
+            if (data_read_f32le(v, 4, &value) == DATA_OK)
+            {
+                // 例如：1000~2000
+                bldc_set_speed(value);
+            }
+        }
+        break;
+
+    case VAR_FRICTION_WHEEL_START_DEBUG:
+        // 摩擦轮启动（调试）
         bldc_set_speed(1200);
-    }
-    break;
+        break;
 
-    case VAR_FRICTION_WHEEL_STOP: // 0xA6
-                                  // 摩擦轮停止 (1字节)
-    {
+    case VAR_FRICTION_WHEEL_STOP_DEBUG:
+        // 摩擦轮停止（调试）
         bldc_set_speed(1000);
-    }
-    break;
+        break;
 
-    case VAR_GRIPPER_GRASP: // 0xEE
-                            // 夹爪抓取 (1字节)
-    {
+    // ===== G =====
+    case VAR_GRIPPER_GRASP_DART:
+        // 夹爪抓取飞镖
         pwm_set_duty(GRIPPER_PWM, GRIPPER_CLOSE);
-    }
-    break;
+        break;
 
-    case VAR_GRIPPER_RELEASE: // 0x04
-                              // 夹爪释放 (1字节)
-    {
+    case VAR_GRIPPER_GRASP_DEBUG:
+        // 夹爪抓取（调试）
+        pwm_set_duty(GRIPPER_PWM, GRIPPER_CLOSE);
+        break;
+
+    case VAR_GRIPPER_LOAD_DART:
+        // 夹爪装弹/对位
+        // TODO: 填入装弹流程，例如 roboarm/导管联动
+        break;
+
+    case VAR_GRIPPER_READY:
+        // 夹爪准备抓取
+        break;
+
+    case VAR_GRIPPER_RELEASE_DEBUG:
+        // 夹爪释放（调试）
         pwm_set_duty(GRIPPER_PWM, GRIPPER_OPEN);
-    }
-    break;
-
-    case VAR_GRIPPER_TAG_X: // 0x69
-        // 夹爪标签X坐标 (4字节)
         break;
 
-    case VAR_GRIPPER_TAG_Y: // 0x15
-        // 夹爪标签Y坐标 (4字节)
+    case VAR_GRIPPER_RELAX:
+        // 夹爪松弛（掉电保护位/低力）
+        // TODO: 若有力控/电机模式切换，补充实现
         break;
 
-    case VAR_GRIPPER_TAG_Z: // 0xC4
-        // 夹爪标签Z坐标 (4字节)
+    case VAR_GRIPPER_TAG_X:
+        // 夹爪标签 X (4字节 float)
+        // TODO: 传感数据入库/滤波/控制
         break;
 
-    case VAR_HEARTBEAT: // 0xD1
-    {
+    case VAR_GRIPPER_TAG_Y:
+        // 夹爪标签 Y (4字节 float)
+        // TODO: 传感数据入库/滤波/控制
+        break;
+
+    case VAR_GRIPPER_TAG_Z:
+        // 夹爪标签 Z (4字节 float)
+        // TODO: 传感数据入库/滤波/控制
+        break;
+
+    // ===== H =====
+    case VAR_HEARTBEAT:
+        // 心跳回显
         add_response_to_buffer(VAR_HEARTBEAT, v, 1);
-    }
-    break;
+        break;
 
-    case VAR_TEST_VAR_F32: // 0x88
-                           // 测试变量浮点数 (4字节) - 把值加0.1再发回
-    {
-        float value;
-        if (data_read_f32le(v, 4, &value) == DATA_OK)
+    // ===== T =====
+    case VAR_TEST_VAR_F32:
+        // 测试变量 float：+0.1 回传
         {
-            value += 0.1f; // 加0.1
-            add_response_to_buffer(VAR_TEST_VAR_F32, &value, 4);
+            float value;
+            if (data_read_f32le(v, 4, &value) == DATA_OK)
+            {
+                value += 0.1f;
+                add_response_to_buffer(VAR_TEST_VAR_F32, &value, 4);
+            }
         }
-    }
-    break;
+        break;
 
-    case VAR_TEST_VAR_U16: // 0xE6
-                           // 测试变量16位整数 (2字节) - 把值加10再发回
-    {
-        uint16_t value = (uint16_t)(v[0] | ((uint16_t)v[1] << 8)); // 小端序读取
-        value = (uint16_t)(value + 10);
-        add_response_to_buffer(VAR_TEST_VAR_U16, &value, 2);
-    }
-    break;
+    case VAR_TEST_VAR_U16:
+        // 测试变量 u16：+10 回传（小端）
+        {
+            uint16_t value = (uint16_t)(v[0] | ((uint16_t)v[1] << 8));
+            value = (uint16_t)(value + 10);
+            add_response_to_buffer(VAR_TEST_VAR_U16, &value, 2);
+        }
+        break;
 
-    case VAR_TEST_VAR_U8: // 0x67
-                          // 测试变量8位整数 (1字节) - 把值加1再发回
-    {
-        uint8_t value = (uint8_t)(v[0] + 1);
-        add_response_to_buffer(VAR_TEST_VAR_U8, &value, 1);
-    }
-    break;
+    case VAR_TEST_VAR_U8:
+        // 测试变量 u8：+1 回传
+        {
+            uint8_t value = (uint8_t)(v[0] + 1);
+            add_response_to_buffer(VAR_TEST_VAR_U8, &value, 1);
+        }
+        break;
 
+    case VAR_TURRET_ANGLE_YAW:
+        // 云台/炮塔偏航角 (4字节 float)
+        // TODO: 角度闭环或前馈控制；此处仅占位解析
+        break;
+
+    // ===== default =====
     default:
-        // 未知变量类型 - 添加错误响应到缓存中
+        // 未知变量：回传错误码，值为未知的 t
         {
             uint8_t value = t;
             add_response_to_buffer(VAR_DATA_ERROR, &value, 1);
