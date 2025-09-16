@@ -172,13 +172,10 @@ static int on_tlv_callback(uint8_t t, const uint8_t *v, uint8_t l, void *user)
     break;
 
     case VAR_DART_PUSH_FORWARD: // 0x49
-                                // 飞镖前推/发射 (1字节)
+                                // 飞镖前推 (1字节)
     {
-        float value = 0;
         current_mode = MODE_FORWARD;
-        launch_servor_shot();
         push_update();
-        bldc_set_speed(value);
     }
     break;
 
@@ -209,7 +206,7 @@ static int on_tlv_callback(uint8_t t, const uint8_t *v, uint8_t l, void *user)
     case VAR_FRICTION_WHEEL_START: // 0xDE
                                    // 摩擦轮启动 (1字节)
     {
-        bldc_init();
+        bldc_set_speed(1200);
     }
     break;
 

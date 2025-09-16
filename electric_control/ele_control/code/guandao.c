@@ -202,8 +202,25 @@ void set_motion(const MotorPattern *pattern, bool is_fast_gear)
             is_back = 0;
     }
 
-    // 根据档位设置PWM占空比
-    if (is_front || is_back)
+    // 慢速后退特殊PWM分配
+    if (!is_fast_gear && is_back)
+    {
+        pwm_set_duty(FRONT_LEFT_PWM, 3000);
+        pwm_set_duty(FRONT_RIGHT_PWM, 3000);
+        pwm_set_duty(BACK_LEFT_PWM, 2900);
+        pwm_set_duty(BACK_RIGHT_PWM, 3000);
+    }
+    // 慢速右转特殊PWM分配
+    else if (!is_fast_gear && pattern->in[0] == 1 && pattern->in[3] == 1 && pattern->in[5] == 1 && pattern->in[6] == 1 &&
+             pattern->in[1] == 0 && pattern->in[2] == 0 && pattern->in[4] == 0 && pattern->in[7] == 0)
+    {
+        pwm_set_duty(FRONT_LEFT_PWM, 3175);
+        pwm_set_duty(FRONT_RIGHT_PWM, 3175);
+        pwm_set_duty(BACK_LEFT_PWM, 1400);
+        pwm_set_duty(BACK_RIGHT_PWM, 1400);
+    }
+    // 普通前进/后退
+    else if (is_front || is_back)
     {
         uint32_t pwm_value = is_fast_gear ? FAST_GEAR_FRONT_BACK_PWM : SLOW_GEAR_FRONT_BACK_PWM;
         pwm_set_duty(FRONT_LEFT_PWM, pwm_value);
@@ -211,11 +228,11 @@ void set_motion(const MotorPattern *pattern, bool is_fast_gear)
         pwm_set_duty(BACK_LEFT_PWM, pwm_value);
         pwm_set_duty(BACK_RIGHT_PWM, pwm_value);
     }
+    // 其他情况
     else
     {
         uint32_t front_pwm = is_fast_gear ? FAST_GEAR_FRONT_WHEEL_PWM : SLOW_GEAR_FRONT_WHEEL_PWM;
         uint32_t back_pwm = is_fast_gear ? FAST_GEAR_BACK_WHEEL_PWM : SLOW_GEAR_BACK_WHEEL_PWM;
-
         pwm_set_duty(FRONT_LEFT_PWM, front_pwm);
         pwm_set_duty(FRONT_RIGHT_PWM, front_pwm);
         pwm_set_duty(BACK_LEFT_PWM, back_pwm);
