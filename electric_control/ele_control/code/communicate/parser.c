@@ -117,6 +117,7 @@ static int on_tlv_callback(uint8_t t, const uint8_t *v, uint8_t l, void *user)
         {
             set_motion(&PATTERN_LEFT, SLOW_GEAR);
         }
+        break;
 
     case VAR_BASE_MOVE_RIGHT_FAST:
         // 底盘右移
@@ -155,6 +156,7 @@ static int on_tlv_callback(uint8_t t, const uint8_t *v, uint8_t l, void *user)
         {
             set_motion(&PATTERN_CW, SLOW_GEAR);
         }
+        break;
 
     case VAR_BASE_STOP: // 0x7B
                         // 底盘停止 (1字节)
