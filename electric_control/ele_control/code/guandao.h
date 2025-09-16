@@ -6,13 +6,13 @@
 
 /* ===================== 硬件引脚定义 ===================== */
 #define READ_UART (UART_3)
-#define WRITE_UART (UART_0)
+// #define WRITE_UART (UART_0)
 
 #define IMU_TX_PIN (UART3_TX_P15_6)
 #define IMU_RX_PIN (UART3_RX_P15_7)
 
-#define TC264_TX_PIN (UART0_TX_P14_0)
-#define TC264_RX_PIN (UART0_RX_P14_1)
+// #define TC264_TX_PIN (UART0_TX_P14_0)
+// #define TC264_RX_PIN (UART0_RX_P14_1)
 
 #define BACK_LEFT_PIN1 (P11_10)
 #define BACK_LEFT_PIN2 (P11_11)

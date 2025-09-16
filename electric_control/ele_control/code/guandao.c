@@ -40,7 +40,7 @@ void guandao_init(void)
     uart_init(READ_UART, UART_BAUDRATE, IMU_TX_PIN, IMU_RX_PIN);
 
     // 要先初始化UART才能初始化IMU
-    // imu_init();
+    imu_init();
     // uart_write_string(WRITE_UART, "Guandao System Initialized.\r\n");
 }
 
@@ -258,42 +258,26 @@ void INS_UpdatePosition(INS_System *ins, GyroData *data)
     ins->position[2] = 0;
 
     // 调试输出：打印dt、a_world、velocity、position
-    char debug_buffer[256];
-    sprintf(debug_buffer, "[DEBUG] dt=%.6f\r\n", ins->dt);
-    uart_write_string(WRITE_UART, debug_buffer);
-    sprintf(debug_buffer, "[DEBUG] a_world: X=%.6f Y=%.6f Z=%.6f\r\n", a_world[0], a_world[1], a_world[2]);
-    uart_write_string(WRITE_UART, debug_buffer);
-    sprintf(debug_buffer, "[DEBUG] yaw_rad = %.6f\r\n", yaw_rad);
-    uart_write_string(WRITE_UART, debug_buffer);
-    sprintf(debug_buffer, "[DEBUG] cos = %.6f sin = %.6f\r\n", c, s);
-    uart_write_string(WRITE_UART, debug_buffer);
+    printf("[DEBUG] dt=%.6f\r\n", ins->dt);
+    printf("[DEBUG] a_world: X=%.6f Y=%.6f Z=%.6f\r\n", a_world[0], a_world[1], a_world[2]);
+    printf("[DEBUG] yaw_rad = %.6f\r\n", yaw_rad);
+    printf("[DEBUG] cos = %.6f sin = %.6f\r\n", c, s);
 }
 
 /* ===================== 调试输出函数 ===================== */
 void print_gyro_data(void)
 {
-    char buffer[128];
-    sprintf(buffer, "Accel: X=%.4f Y=%.4f Z=%.4f g\r\n", gyro_data.accel_x, gyro_data.accel_y, gyro_data.accel_z);
-    uart_write_string(WRITE_UART, buffer);
-
-    sprintf(buffer, "Gyro: X=%.2f Y=%.2f Z=%.2f °/s\r\n", gyro_data.gyro_x, gyro_data.gyro_y, gyro_data.gyro_z);
-    uart_write_string(WRITE_UART, buffer);
-
-    sprintf(buffer, "Angle: Roll=%.2f Pitch=%.2f Yaw=%.2f °\r\n\r\n", gyro_data.roll, gyro_data.pitch, gyro_data.yaw);
-    uart_write_string(WRITE_UART, buffer);
+    printf("Accel: X=%.4f Y=%.4f Z=%.4f g\r\n", gyro_data.accel_x, gyro_data.accel_y, gyro_data.accel_z);
+    printf("Gyro: X=%.2f Y=%.2f Z=%.2f °/s\r\n", gyro_data.gyro_x, gyro_data.gyro_y, gyro_data.gyro_z);
+    printf("Angle: Roll=%.2f Pitch=%.2f Yaw=%.2f °\r\n\r\n", gyro_data.roll, gyro_data.pitch, gyro_data.yaw);
 }
 
 void INS_PrintData(INS_System *ins)
 {
-    char buffer[128];
-
-    sprintf(buffer, "Position: X=%.2f Y=%.2f Z=%.2f m\r\n",
-            ins->position[0], ins->position[1], ins->position[2]);
-    uart_write_string(WRITE_UART, buffer);
-
-    sprintf(buffer, "Velocity: Vx=%.2f Vy=%.2f Vz=%.2f m/s\r\n\r\n",
-            ins->velocity[0], ins->velocity[1], ins->velocity[2]);
-    uart_write_string(WRITE_UART, buffer);
+    printf("Position: X=%.2f Y=%.2f Z=%.2f m\r\n",
+           ins->position[0], ins->position[1], ins->position[2]);
+    printf("Velocity: Vx=%.2f Vy=%.2f Vz=%.2f m/s\r\n\r\n",
+           ins->velocity[0], ins->velocity[1], ins->velocity[2]);
 }
 
 /* ===================== 中断处理函数 ===================== */
