@@ -54,6 +54,8 @@ void set_all_pwm(int duty);
 void test_servo_positions(void);
 void move_servo_smoothly(int *current_pos, int target_pos, int pwm_pin);
 void delay_step(void);
+
+void arm_init(void);
 void move_to_grip_prepare(void);
 void grip_prepare_to_grip(void);
 void grip_to_shot(void);

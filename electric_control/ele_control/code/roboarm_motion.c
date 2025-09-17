@@ -73,21 +73,29 @@ void delay_step(void)
 void move_to_grip_prepare(void)
 {
     printf("Moving to grip_prepare position...\r\n");
-    // move_servo_smoothly(&current_pos.dabi, VERTICAL_DABI, DABI_PWM);
-    // move_servo_smoothly(&current_pos.zhongbi, PROCESS2_ZHONGBI, ZHONGBI_PWM);
 
-    // move_servo_smoothly(&current_pos.di, GRIP_DI, DI_PWM);
-    // move_servo_smoothly(&current_pos.dabi, GRIP_PREPARE_DABI, DABI_PWM);
-    // move_servo_smoothly(&current_pos.zhongbi, GRIP_PREPARE_ZHONGBI, ZHONGBI_PWM);
-    // move_servo_smoothly(&current_pos.xiaobi, GRIP_XIAOBI, XIAOBI_PWM);
-    // move_servo_smoothly(&current_pos.shouwan, GRIP_SHOUWAN, SHOUWAN_PWM);
-    // move_servo_smoothly(&current_pos.gripper, GRIPPER_OPEN, GRIPPER_PWM);
+    move_servo_smoothly(&current_pos.di, GRIP_DI, DI_PWM);
+    move_servo_smoothly(&current_pos.dabi, GRIP_PREPARE_DABI, DABI_PWM);
+    move_servo_smoothly(&current_pos.zhongbi, GRIP_PREPARE_ZHONGBI, ZHONGBI_PWM);
+    move_servo_smoothly(&current_pos.xiaobi, GRIP_XIAOBI, XIAOBI_PWM);
+    move_servo_smoothly(&current_pos.shouwan, GRIP_SHOUWAN, SHOUWAN_PWM);
+    move_servo_smoothly(&current_pos.gripper, GRIPPER_OPEN, GRIPPER_PWM);
+}
+
+void arm_init(void)
+{
     pwm_set_duty(DI_PWM, 970);
+    current_pos.di = 970;
     pwm_set_duty(DABI_PWM, 630);
+    current_pos.dabi = 630;
     pwm_set_duty(ZHONGBI_PWM, 420);
+    current_pos.zhongbi = 420;
     pwm_set_duty(XIAOBI_PWM, 1060);
+    current_pos.xiaobi = 1060;
     pwm_set_duty(SHOUWAN_PWM, 680);
+    current_pos.shouwan = 680;
     pwm_set_duty(GRIPPER_PWM, 250);
+    current_pos.gripper = 250;
 }
 
 void grip_prepare_to_grip(void)
