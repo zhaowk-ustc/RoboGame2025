@@ -214,7 +214,9 @@ static int on_tlv_callback(uint8_t t, const uint8_t *v, uint8_t l, void *user)
     // ===== G =====
     case VAR_GRIPPER_GRASP_DART:
         // 夹爪抓取飞镖
-        pwm_set_duty(GRIPPER_PWM, GRIPPER_CLOSE);
+        {
+            grip_prepare_to_grip();
+        }
         break;
 
     case VAR_GRIPPER_GRASP_DEBUG:
@@ -225,10 +227,16 @@ static int on_tlv_callback(uint8_t t, const uint8_t *v, uint8_t l, void *user)
     case VAR_GRIPPER_LOAD_DART:
         // 夹爪装弹/对位
         // TODO: 填入装弹流程，例如 roboarm/导管联动
+        {
+            grip_to_shot();
+        }
         break;
 
     case VAR_GRIPPER_READY:
         // 夹爪准备抓取
+        {
+            shot_to_grip_prepare();
+        }
         break;
 
     case VAR_GRIPPER_RELEASE_DEBUG:
