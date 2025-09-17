@@ -84,14 +84,14 @@ void move_to_grip_prepare(void)
 
 void arm_init(void)
 {
-    pwm_set_duty(DI_PWM, 970);
-    current_pos.di = 970;
-    pwm_set_duty(DABI_PWM, 630);
-    current_pos.dabi = 630;
-    pwm_set_duty(ZHONGBI_PWM, 420);
-    current_pos.zhongbi = 420;
-    pwm_set_duty(XIAOBI_PWM, 1060);
-    current_pos.xiaobi = 1060;
+    pwm_set_duty(DI_PWM, 510);
+    current_pos.di = 510;
+    pwm_set_duty(DABI_PWM, 540);
+    current_pos.dabi = 540;
+    pwm_set_duty(ZHONGBI_PWM, 740);
+    current_pos.zhongbi = 740;
+    pwm_set_duty(XIAOBI_PWM, 370);
+    current_pos.xiaobi = 370;
     pwm_set_duty(SHOUWAN_PWM, 680);
     current_pos.shouwan = 680;
     pwm_set_duty(GRIPPER_PWM, 250);

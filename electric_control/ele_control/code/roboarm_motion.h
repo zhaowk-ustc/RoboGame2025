@@ -33,7 +33,7 @@
 
 // 运动控制参数
 #define MOVE_SPEED 5
-#define DELAY_MS 40
+#define DELAY_MS 20
 #define STEP_DELAY_MS 1000
 
 // 舵机位置结构体
