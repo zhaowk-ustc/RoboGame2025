@@ -88,8 +88,8 @@ void arm_init(void)
     current_pos.di = 510;
     pwm_set_duty(DABI_PWM, 540);
     current_pos.dabi = 540;
-    pwm_set_duty(ZHONGBI_PWM, 740);
-    current_pos.zhongbi = 740;
+    pwm_set_duty(ZHONGBI_PWM, 1000);
+    current_pos.zhongbi = 1000;
     pwm_set_duty(XIAOBI_PWM, 370);
     current_pos.xiaobi = 370;
     pwm_set_duty(SHOUWAN_PWM, 680);
@@ -102,11 +102,18 @@ void arm_relax(void)
 {
     pwm_set_duty(DI_PWM, 0);
     pwm_set_duty(DABI_PWM, 0);
-    ;
     pwm_set_duty(ZHONGBI_PWM, 0);
     pwm_set_duty(XIAOBI_PWM, 0);
     pwm_set_duty(SHOUWAN_PWM, 0);
     pwm_set_duty(GRIPPER_PWM, 0);
+    
+    // 更新当前位置状态
+    current_pos.di = 0;
+    current_pos.dabi = 0;
+    current_pos.zhongbi = 0;
+    current_pos.xiaobi = 0;
+    current_pos.shouwan = 0;
+    current_pos.gripper = 0;
 }
 
 void grip_prepare_to_grip(void)
