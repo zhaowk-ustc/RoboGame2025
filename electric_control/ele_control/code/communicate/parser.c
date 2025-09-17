@@ -145,42 +145,6 @@ static int on_tlv_callback(uint8_t t, const uint8_t *v, uint8_t l, void *user)
         break;
 
     // ===== D =====
-    case VAR_DATA_ERROR:
-        // 数据错误（来自对端告警）；本端无需动作
-        break;
-
-    case VAR_DEBUG_DART_PUSH_BACKWARD:
-        // 飞镖后退（调试）
-        current_mode = MODE_RETURN;
-        push_update();
-        break;
-
-    case VAR_DEBUG_DART_PUSH_FORWARD:
-        // 飞镖前推（调试）
-        current_mode = MODE_FORWARD;
-        push_update();
-        break;
-
-    case VAR_DEBUG_DART_PUSH_ONCE:
-        // 飞镖单次前推（调试）
-        // TODO: 如有一次性推送 API，可替换为 push_once();
-        current_mode = MODE_FORWARD;
-        push_update();
-        // 业务上若需“单次”，上层定时/位置到点后再下发 STOP
-        break;
-
-    case VAR_DEBUG_DART_PUSH_RESET:
-        // 飞镖机构复位（调试）
-        // TODO: 如有复位 API，可调用 push_reset();
-        current_mode = MODE_RETURN;
-        push_update();
-        break;
-
-    case VAR_DEBUG_DART_PUSH_STOP:
-        // 飞镖推送停止（调试）
-        current_mode = MODE_STOP;
-        push_update();
-        break;
 
     // ===== F =====
     case VAR_FIRE_ONCE:
@@ -199,16 +163,6 @@ static int on_tlv_callback(uint8_t t, const uint8_t *v, uint8_t l, void *user)
                 bldc_set_speed(value);
             }
         }
-        break;
-
-    case VAR_DEBUG_FRICTION_WHEEL_START:
-        // 摩擦轮启动（调试）
-        bldc_set_speed(1200);
-        break;
-
-    case VAR_DEBUG_FRICTION_WHEEL_STOP:
-        // 摩擦轮停止（调试）
-        bldc_set_speed(1000);
         break;
 
     // ===== G =====
@@ -292,10 +246,13 @@ static int on_tlv_callback(uint8_t t, const uint8_t *v, uint8_t l, void *user)
         // 未知变量：回传错误码，值为未知的 t
         {
             uint8_t value = t;
-            add_response_to_buffer(VAR_DATA_ERROR, &value, 1);
+            add_response_to_buffer(VAR_ERROR, &value, 1);
         }
         break;
     }
+
+    // 统一回发VAR_OK，值为接收到的变量ID
+    add_response_to_buffer(VAR_OK, &t, 1);
 
     return 0; // 继续解析
 }
