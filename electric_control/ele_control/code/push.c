@@ -56,6 +56,19 @@ void push_stop(void)
     printf("Push stopped.\r\n");
 }
 
+void push_forward_and_back(void)
+{
+    current_mode = MODE_FORWARD;
+    while (1)
+    {
+        push_update();
+        if (current_mode == MODE_STOP)
+        {
+            break;
+        }
+    }
+}
+
 /* ===================== 私有函数实现 ===================== */
 
 /**

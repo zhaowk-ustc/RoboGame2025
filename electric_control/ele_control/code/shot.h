@@ -51,5 +51,6 @@ void shot_init(void);
 void bldc_init(void);
 void bldc_set_speed(uint16_t throttle);        // 传参1000-2000
 void set_launch_angle(float normalized_input); // 传参-1到1，飞镖装载直接给1
+void shot_fire_once(void);
 
 #endif /* CODE_SHOT_H_ */

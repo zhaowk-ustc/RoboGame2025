@@ -38,5 +38,6 @@ extern MovementMode current_mode;
 void push_init(void);
 void push_update(void);
 void push_stop(void);
+void push_forward_and_back(void);
 
 #endif // PUSH_H

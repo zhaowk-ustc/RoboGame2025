@@ -150,7 +150,9 @@ static int on_tlv_callback(uint8_t t, const uint8_t *v, uint8_t l, void *user)
     case VAR_FIRE_ONCE:
         // 发射一次
         // TODO: 若有射击接口，替换为 shot_fire_once() / fire_once()
-        // shot_fire_once();
+        {
+            shot_fire_once();
+        }
         break;
 
     case VAR_FRICTION_WHEEL_SPEED:
@@ -239,6 +241,10 @@ static int on_tlv_callback(uint8_t t, const uint8_t *v, uint8_t l, void *user)
     case VAR_TURRET_ANGLE_YAW:
         // 云台/炮塔偏航角 (4字节 float)
         // TODO: 角度闭环或前馈控制；此处仅占位解析
+        {
+            float value;
+            set_launch_angle(value);
+        }
         break;
 
     // ===== default =====

@@ -5,6 +5,7 @@
  *      Author: Pluviophile-TAO
  */
 #include "shot.h"
+#include "push.h"
 
 // 定义变量（在.c文件中）
 const pwm_channel_enum channel_list[4] = {SHOT_FRONT_LEFT, SHOT_FRONT_RIGHT, SHOT_BACK_LEFT, SHOT_BACK_RIGHT};
@@ -66,4 +67,11 @@ void set_launch_angle(float normalized_input)
     }
 
     pwm_set_duty(LUANCH_SERVOR, pwm_value);
+}
+
+void shot_fire_once(void)
+{
+    bldc_set_speed(1200);
+    push_forward_and_back();
+    bldc_set_speed(1000);
 }
