@@ -83,7 +83,7 @@ static void handle_forward_movement(void)
     // 限定编码器范围
     if (encoder_count <= -TARGET_POSITION)
     {
-        push_stop();
+        current_mode = MODE_RETURN;
         printf("Reached negative limit, stopped.\r\n");
         return;
     }
