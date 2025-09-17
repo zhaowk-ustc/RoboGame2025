@@ -149,19 +149,19 @@ static int on_tlv_callback(uint8_t t, const uint8_t *v, uint8_t l, void *user)
         // 数据错误（来自对端告警）；本端无需动作
         break;
 
-    case VAR_DART_PUSH_BACKWARD_DEBUG:
+    case VAR_DEBUG_DART_PUSH_BACKWARD:
         // 飞镖后退（调试）
         current_mode = MODE_RETURN;
         push_update();
         break;
 
-    case VAR_DART_PUSH_FORWARD_DEBUG:
+    case VAR_DEBUG_DART_PUSH_FORWARD:
         // 飞镖前推（调试）
         current_mode = MODE_FORWARD;
         push_update();
         break;
 
-    case VAR_DART_PUSH_ONCE_DEBUG:
+    case VAR_DEBUG_DART_PUSH_ONCE:
         // 飞镖单次前推（调试）
         // TODO: 如有一次性推送 API，可替换为 push_once();
         current_mode = MODE_FORWARD;
@@ -169,14 +169,14 @@ static int on_tlv_callback(uint8_t t, const uint8_t *v, uint8_t l, void *user)
         // 业务上若需“单次”，上层定时/位置到点后再下发 STOP
         break;
 
-    case VAR_DART_PUSH_RESET_DEBUG:
+    case VAR_DEBUG_DART_PUSH_RESET:
         // 飞镖机构复位（调试）
         // TODO: 如有复位 API，可调用 push_reset();
         current_mode = MODE_RETURN;
         push_update();
         break;
 
-    case VAR_DART_PUSH_STOP_DEBUG:
+    case VAR_DEBUG_DART_PUSH_STOP:
         // 飞镖推送停止（调试）
         current_mode = MODE_STOP;
         push_update();
@@ -201,72 +201,49 @@ static int on_tlv_callback(uint8_t t, const uint8_t *v, uint8_t l, void *user)
         }
         break;
 
-    case VAR_FRICTION_WHEEL_START_DEBUG:
+    case VAR_DEBUG_FRICTION_WHEEL_START:
         // 摩擦轮启动（调试）
         bldc_set_speed(1200);
         break;
 
-    case VAR_FRICTION_WHEEL_STOP_DEBUG:
+    case VAR_DEBUG_FRICTION_WHEEL_STOP:
         // 摩擦轮停止（调试）
         bldc_set_speed(1000);
         break;
 
     // ===== G =====
-    case VAR_GRIPPER_INIT:
+    case VAR_ARM_RESET:
         // 夹爪初始化
         {
-            arm_init();
+            arm_reset();
         }
         break;
-    case VAR_GRIPPER_INIT_TO_READY:
+    case VAR_ARM_RESET_TO_PREPARE:
         // 夹爪初始化到就绪
         {
-            move_to_grip_prepare();
+            arm_reset_to_prepare();
         }
         break;
-    case VAR_GRIPPER_GRASP_DART:
+    case VAR_ARM_GRASP_DART:
         // 夹爪抓取飞镖
         {
-            grip_prepare_to_grip();
+            arm_prepare_to_grip();
         }
         break;
 
-    case VAR_GRIPPER_GRASP_DEBUG:
-        // 夹爪抓取（调试）
-        break;
-
-    case VAR_GRIPPER_LOAD_DART:
+    case VAR_ARM_LOAD_DART:
         // 夹爪装弹/对位
         {
-            grip_to_shot();
+            arm_grip_to_shot();
+            arm_shot_to_reset();
         }
         break;
-    case VAR_GRIPPER_RELEASE_DEBUG:
-        // 夹爪释放（调试）
-        pwm_set_duty(GRIPPER_PWM, GRIPPER_OPEN);
-        break;
 
-    case VAR_GRIPPER_RELAX:
+    case VAR_ARM_RELAX:
         // 夹爪松弛（掉电保护位/低力）
-        // TODO: 若有力控/电机模式切换，补充实现
         {
             arm_relax();
         }
-        break;
-
-    case VAR_GRIPPER_TAG_X:
-        // 夹爪标签 X (4字节 float)
-        // TODO: 传感数据入库/滤波/控制
-        break;
-
-    case VAR_GRIPPER_TAG_Y:
-        // 夹爪标签 Y (4字节 float)
-        // TODO: 传感数据入库/滤波/控制
-        break;
-
-    case VAR_GRIPPER_TAG_Z:
-        // 夹爪标签 Z (4字节 float)
-        // TODO: 传感数据入库/滤波/控制
         break;
 
     // ===== H =====
