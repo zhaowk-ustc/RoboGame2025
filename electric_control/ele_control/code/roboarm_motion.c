@@ -73,6 +73,8 @@ void delay_step(void)
 void move_to_grip_prepare(void)
 {
     printf("Moving to grip_prepare position...\r\n");
+    move_servo_smoothly(&current_pos.dabi, VERTICAL_DABI, DABI_PWM);
+    move_servo_smoothly(&current_pos.zhongbi, PROCESS2_ZHONGBI, ZHONGBI_PWM);
 
     move_servo_smoothly(&current_pos.di, GRIP_DI, DI_PWM);
     move_servo_smoothly(&current_pos.dabi, GRIP_PREPARE_DABI, DABI_PWM);
