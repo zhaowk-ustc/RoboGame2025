@@ -38,12 +38,32 @@ void bldc_set_speed(uint16_t throttle)
     }
 }
 
-void launch_servor_place(void)
+// 设置发射架角度函数
+void set_launch_angle(float normalized_input)
 {
-    pwm_set_duty(LUANCH_SERVOR, PWM_LUANCH_SERVOR_PLACE);
-}
+    int pwm_value;
 
-void launch_servor_shot(void)
-{
-    pwm_set_duty(LUANCH_SERVOR, PWM_LUANCH_SERVOR_SHOT);
+    // 输入范围检查
+    if (normalized_input < -1.0f)
+    {
+        normalized_input = -1.0f;
+    }
+    else if (normalized_input > 1.0f)
+    {
+        normalized_input = 1.0f;
+    }
+
+    // 计算PWM值
+    if (normalized_input <= 0.0f)
+    {
+        // -1到0映射为1250到700
+        pwm_value = 1250.0f + normalized_input * 550.0f;
+    }
+    else
+    {
+        // 0到1映射为700到300
+        pwm_value = 700.0f - normalized_input * 400.0f;
+    }
+
+    pwm_set_duty(LUANCH_SERVOR, pwm_value);
 }

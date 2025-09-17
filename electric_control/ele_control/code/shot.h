@@ -49,8 +49,7 @@ extern uint16_t esc_throttle[4]; // 改为声明，去掉初始化
 /* ===================== 函数声明 ===================== */
 void shot_init(void);
 void bldc_init(void);
-void bldc_set_speed(uint16_t throttle); // 传参1000-2000
-void launch_servor_place(void);
-void launch_servor_shot(void);
+void bldc_set_speed(uint16_t throttle);        // 传参1000-2000
+void set_launch_angle(float normalized_input); // 传参-1到1，飞镖装载直接给1
 
 #endif /* CODE_SHOT_H_ */

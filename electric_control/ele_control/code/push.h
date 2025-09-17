@@ -12,7 +12,7 @@
 #define ENCODER_B_PIN (TIM2_ENCODER_CH2_P33_6)
 
 /* ===================== 运动控制参数 ===================== */
-#define TARGET_POSITION 3000 // 目标位置（编码器计数）
+#define TARGET_POSITION 6000 // 目标位置（编码器计数）
 #define MOVE_SPEED 6000      // PWM占空比（速度）
 #define DIRECTION_FORWARD GPIO_HIGH
 #define DIRECTION_BACKWARD GPIO_LOW
