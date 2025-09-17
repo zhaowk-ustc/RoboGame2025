@@ -98,6 +98,17 @@ void arm_init(void)
     current_pos.gripper = 250;
 }
 
+void arm_relax(void)
+{
+    pwm_set_duty(DI_PWM, 0);
+    pwm_set_duty(DABI_PWM, 0);
+    ;
+    pwm_set_duty(ZHONGBI_PWM, 0);
+    pwm_set_duty(XIAOBI_PWM, 0);
+    pwm_set_duty(SHOUWAN_PWM, 0);
+    pwm_set_duty(GRIPPER_PWM, 0);
+}
+
 void grip_prepare_to_grip(void)
 {
     printf("=== Start grip ===\r\n");

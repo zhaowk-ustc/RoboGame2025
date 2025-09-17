@@ -56,6 +56,7 @@ void move_servo_smoothly(int *current_pos, int target_pos, int pwm_pin);
 void delay_step(void);
 
 void arm_init(void);
+void arm_relax(void);
 void move_to_grip_prepare(void);
 void grip_prepare_to_grip(void);
 void grip_to_shot(void);

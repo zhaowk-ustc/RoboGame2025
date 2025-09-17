@@ -215,12 +215,12 @@ static int on_tlv_callback(uint8_t t, const uint8_t *v, uint8_t l, void *user)
     case VAR_GRIPPER_INIT:
         // 夹爪初始化
         {
-            grip_init();
+            arm_init();
         }
     case VAR_GRIPPER_INIT_TO_READY:
         // 夹爪初始化到就绪
         {
-            grip_init_to_ready();
+            move_to_grip_prepare();
         }
         break;
     case VAR_GRIPPER_GRASP_DART:
@@ -248,6 +248,9 @@ static int on_tlv_callback(uint8_t t, const uint8_t *v, uint8_t l, void *user)
     case VAR_GRIPPER_RELAX:
         // 夹爪松弛（掉电保护位/低力）
         // TODO: 若有力控/电机模式切换，补充实现
+        {
+            arm_relax();
+        }
         break;
 
     case VAR_GRIPPER_TAG_X:
