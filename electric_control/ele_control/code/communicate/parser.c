@@ -217,6 +217,7 @@ static int on_tlv_callback(uint8_t t, const uint8_t *v, uint8_t l, void *user)
         {
             arm_init();
         }
+        break;
     case VAR_GRIPPER_INIT_TO_READY:
         // 夹爪初始化到就绪
         {
