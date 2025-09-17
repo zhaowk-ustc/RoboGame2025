@@ -18,9 +18,7 @@ fifo_struct uart_data_fifo;
 const MotorPattern PATTERN_FRONT = {{1, 0, 1, 0, 1, 0, 1, 0}};
 // 后退：所有轮后退
 const MotorPattern PATTERN_BACK = {{0, 1, 0, 1, 0, 1, 0, 1}};
-// 逆时针旋转：左轮后退，右轮前进
 const MotorPattern PATTERN_CCW = {{0, 1, 1, 0, 0, 1, 1, 0}};
-// 顺时针旋转：左轮前进，右轮后退
 const MotorPattern PATTERN_CW = {{1, 0, 0, 1, 1, 0, 0, 1}};
 const MotorPattern PATTERN_LEFT = {{0, 1, 1, 0, 1, 0, 0, 1}};
 const MotorPattern PATTERN_RIGHT = {{1, 0, 0, 1, 0, 1, 1, 0}};
@@ -192,51 +190,95 @@ void set_motion(const MotorPattern *pattern, bool is_fast_gear)
         gpio_set_level(pins[i], pattern->in[i] ? GPIO_HIGH : GPIO_LOW);
     }
 
-    // 判断是否为前进/后退模式
-    int is_front = 1, is_back = 1;
-    for (int i = 0; i < 8; i++)
+    if (is_fast_gear)
     {
-        if (pattern->in[i] != PATTERN_FRONT.in[i])
-            is_front = 0;
-        if (pattern->in[i] != PATTERN_BACK.in[i])
-            is_back = 0;
+        // 快速状态 - 保持原有逻辑不变
+        if (memcmp(pattern, &PATTERN_FRONT, sizeof(MotorPattern)) == 0 ||
+            memcmp(pattern, &PATTERN_BACK, sizeof(MotorPattern)) == 0)
+        {
+            uint32_t pwm_value = FAST_GEAR_FRONT_BACK_PWM;
+            pwm_set_duty(FRONT_LEFT_PWM, pwm_value);
+            pwm_set_duty(FRONT_RIGHT_PWM, pwm_value);
+            pwm_set_duty(BACK_LEFT_PWM, pwm_value);
+            pwm_set_duty(BACK_RIGHT_PWM, pwm_value);
+        }
+        else
+        {
+            uint32_t front_pwm = FAST_GEAR_FRONT_WHEEL_PWM;
+            uint32_t back_pwm = FAST_GEAR_BACK_WHEEL_PWM;
+            pwm_set_duty(FRONT_LEFT_PWM, front_pwm);
+            pwm_set_duty(FRONT_RIGHT_PWM, front_pwm);
+            pwm_set_duty(BACK_LEFT_PWM, back_pwm);
+            pwm_set_duty(BACK_RIGHT_PWM, back_pwm);
+        }
     }
-
-    // 慢速后退特殊PWM分配
-    if (!is_fast_gear && is_back)
-    {
-        pwm_set_duty(FRONT_LEFT_PWM, 3000);
-        pwm_set_duty(FRONT_RIGHT_PWM, 3000);
-        pwm_set_duty(BACK_LEFT_PWM, 2900);
-        pwm_set_duty(BACK_RIGHT_PWM, 3000);
-    }
-    // 慢速右转特殊PWM分配
-    else if (!is_fast_gear && pattern->in[0] == 1 && pattern->in[3] == 1 && pattern->in[5] == 1 && pattern->in[6] == 1 &&
-             pattern->in[1] == 0 && pattern->in[2] == 0 && pattern->in[4] == 0 && pattern->in[7] == 0)
-    {
-        pwm_set_duty(FRONT_LEFT_PWM, 3175);
-        pwm_set_duty(FRONT_RIGHT_PWM, 3175);
-        pwm_set_duty(BACK_LEFT_PWM, 1400);
-        pwm_set_duty(BACK_RIGHT_PWM, 1400);
-    }
-    // 普通前进/后退
-    else if (is_front || is_back)
-    {
-        uint32_t pwm_value = is_fast_gear ? FAST_GEAR_FRONT_BACK_PWM : SLOW_GEAR_FRONT_BACK_PWM;
-        pwm_set_duty(FRONT_LEFT_PWM, pwm_value);
-        pwm_set_duty(FRONT_RIGHT_PWM, pwm_value);
-        pwm_set_duty(BACK_LEFT_PWM, pwm_value);
-        pwm_set_duty(BACK_RIGHT_PWM, pwm_value);
-    }
-    // 其他情况
     else
     {
-        uint32_t front_pwm = is_fast_gear ? FAST_GEAR_FRONT_WHEEL_PWM : SLOW_GEAR_FRONT_WHEEL_PWM;
-        uint32_t back_pwm = is_fast_gear ? FAST_GEAR_BACK_WHEEL_PWM : SLOW_GEAR_BACK_WHEEL_PWM;
-        pwm_set_duty(FRONT_LEFT_PWM, front_pwm);
-        pwm_set_duty(FRONT_RIGHT_PWM, front_pwm);
-        pwm_set_duty(BACK_LEFT_PWM, back_pwm);
-        pwm_set_duty(BACK_RIGHT_PWM, back_pwm);
+        // 慢速状态 - 检查八种模式并设置特定PWM值
+        if (memcmp(pattern, &PATTERN_BACK, sizeof(MotorPattern)) == 0)
+        {
+            // 慢速后退特殊PWM分配
+            pwm_set_duty(FRONT_LEFT_PWM, 1700);
+            pwm_set_duty(FRONT_RIGHT_PWM, 1700);
+            pwm_set_duty(BACK_LEFT_PWM, 1700);
+            pwm_set_duty(BACK_RIGHT_PWM, 1800);
+        }
+        else if (memcmp(pattern, &PATTERN_RIGHT, sizeof(MotorPattern)) == 0)
+        {
+            // 慢速右转特殊PWM分配
+            pwm_set_duty(FRONT_LEFT_PWM, 3175);
+            pwm_set_duty(FRONT_RIGHT_PWM, 3175);
+            pwm_set_duty(BACK_LEFT_PWM, 1400);
+            pwm_set_duty(BACK_RIGHT_PWM, 1400);
+        }
+        else if (memcmp(pattern, &PATTERN_LEFT, sizeof(MotorPattern)) == 0)
+        {
+            // 慢速左转特殊PWM分配
+            pwm_set_duty(FRONT_LEFT_PWM, 1400);
+            pwm_set_duty(FRONT_RIGHT_PWM, 1400);
+            pwm_set_duty(BACK_LEFT_PWM, 3175);
+            pwm_set_duty(BACK_RIGHT_PWM, 3175);
+        }
+        else if (memcmp(pattern, &PATTERN_CCW, sizeof(MotorPattern)) == 0)
+        {
+            // 慢速逆时针旋转特殊PWM分配
+            pwm_set_duty(FRONT_LEFT_PWM, 1400);
+            pwm_set_duty(FRONT_RIGHT_PWM, 3000);
+            pwm_set_duty(BACK_LEFT_PWM, 1400);
+            pwm_set_duty(BACK_RIGHT_PWM, 3000);
+        }
+        else if (memcmp(pattern, &PATTERN_CW, sizeof(MotorPattern)) == 0)
+        {
+            // 慢速顺时针旋转特殊PWM分配
+            pwm_set_duty(FRONT_LEFT_PWM, 3000);
+            pwm_set_duty(FRONT_RIGHT_PWM, 1400);
+            pwm_set_duty(BACK_LEFT_PWM, 3000);
+            pwm_set_duty(BACK_RIGHT_PWM, 1400);
+        }
+        else if (memcmp(pattern, &PATTERN_FRONT, sizeof(MotorPattern)) == 0)
+        {
+            // 慢速前进特殊PWM分配
+            pwm_set_duty(FRONT_LEFT_PWM, 2000);
+            pwm_set_duty(FRONT_RIGHT_PWM, 2000);
+            pwm_set_duty(BACK_LEFT_PWM, 2000);
+            pwm_set_duty(BACK_RIGHT_PWM, 2000);
+        }
+        else if (memcmp(pattern, &PATTERN_STOP, sizeof(MotorPattern)) == 0)
+        {
+            // 停止状态 - 所有PWM设为0
+            pwm_set_duty(FRONT_LEFT_PWM, 0);
+            pwm_set_duty(FRONT_RIGHT_PWM, 0);
+            pwm_set_duty(BACK_LEFT_PWM, 0);
+            pwm_set_duty(BACK_RIGHT_PWM, 0);
+        }
+        else
+        {
+            // 其他未识别模式使用默认静止
+            pwm_set_duty(FRONT_LEFT_PWM, 0);
+            pwm_set_duty(FRONT_RIGHT_PWM, 0);
+            pwm_set_duty(BACK_LEFT_PWM, 0);
+            pwm_set_duty(BACK_RIGHT_PWM, 0);
+        }
     }
 }
 

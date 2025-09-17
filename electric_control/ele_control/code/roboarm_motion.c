@@ -75,6 +75,7 @@ void move_to_grip_prepare(void)
     printf("Moving to grip_prepare position...\r\n");
     move_servo_smoothly(&current_pos.dabi, VERTICAL_DABI, DABI_PWM);
     move_servo_smoothly(&current_pos.zhongbi, PROCESS2_ZHONGBI, ZHONGBI_PWM);
+
     move_servo_smoothly(&current_pos.di, GRIP_DI, DI_PWM);
     move_servo_smoothly(&current_pos.dabi, GRIP_PREPARE_DABI, DABI_PWM);
     move_servo_smoothly(&current_pos.zhongbi, GRIP_PREPARE_ZHONGBI, ZHONGBI_PWM);
@@ -86,23 +87,57 @@ void move_to_grip_prepare(void)
 void grip_prepare_to_grip(void)
 {
     printf("=== Start grip ===\r\n");
-    struct
+    // 大臂和小臂同时移动到GRIP_DABI和GRIP_ZHONGBI
+    int max_steps = 0;
+    int start_dabi = current_pos.dabi;
+    int start_zhongbi = current_pos.zhongbi;
+    int diff_dabi = GRIP_DABI - start_dabi;
+    int diff_zhongbi = GRIP_ZHONGBI - start_zhongbi;
+    int steps_dabi = (diff_dabi > 0 ? diff_dabi : -diff_dabi) / MOVE_SPEED;
+    int steps_zhongbi = (diff_zhongbi > 0 ? diff_zhongbi : -diff_zhongbi) / MOVE_SPEED;
+    max_steps = (steps_dabi > steps_zhongbi) ? steps_dabi : steps_zhongbi;
+    if (max_steps == 0)
+        max_steps = 1;
+    for (int i = 0; i < max_steps; i++)
     {
-        int *target_ptr;
-        int target_val;
-        int pwm_pin;
-        const char *description;
-    } steps[] = {
-        {&current_pos.dabi, GRIP_DABI, DABI_PWM, "Move to GRIP_DABI"},
-        {&current_pos.zhongbi, GRIP_ZHONGBI, ZHONGBI_PWM, "Move to GRIP_ZHONGBI"},
-        {&current_pos.gripper, GRIPPER_CLOSE, GRIPPER_PWM, "Close gripper"}};
-    const int step_count = sizeof(steps) / sizeof(steps[0]);
-    for (int i = 0; i < step_count; i++)
-    {
-        printf("Step %d: %s\r\n", i + 1, steps[i].description);
-        move_servo_smoothly(steps[i].target_ptr, steps[i].target_val, steps[i].pwm_pin);
-        delay_step();
+        if (current_pos.dabi != GRIP_DABI)
+        {
+            if (current_pos.dabi < GRIP_DABI)
+            {
+                current_pos.dabi += MOVE_SPEED;
+                if (current_pos.dabi > GRIP_DABI)
+                    current_pos.dabi = GRIP_DABI;
+            }
+            else
+            {
+                current_pos.dabi -= MOVE_SPEED;
+                if (current_pos.dabi < GRIP_DABI)
+                    current_pos.dabi = GRIP_DABI;
+            }
+            pwm_set_duty(DABI_PWM, current_pos.dabi);
+        }
+        if (current_pos.zhongbi != GRIP_ZHONGBI)
+        {
+            if (current_pos.zhongbi < GRIP_ZHONGBI)
+            {
+                current_pos.zhongbi += MOVE_SPEED;
+                if (current_pos.zhongbi > GRIP_ZHONGBI)
+                    current_pos.zhongbi = GRIP_ZHONGBI;
+            }
+            else
+            {
+                current_pos.zhongbi -= MOVE_SPEED;
+                if (current_pos.zhongbi < GRIP_ZHONGBI)
+                    current_pos.zhongbi = GRIP_ZHONGBI;
+            }
+            pwm_set_duty(ZHONGBI_PWM, current_pos.zhongbi);
+        }
+        system_delay_ms(DELAY_MS);
     }
+    delay_step();
+    // 夹爪动作
+    printf("Step: Close gripper\r\n");
+    move_servo_smoothly(&current_pos.gripper, GRIPPER_CLOSE, GRIPPER_PWM);
     delay_step();
 }
 
