@@ -235,7 +235,7 @@ static int on_tlv_callback(uint8_t t, const uint8_t *v, uint8_t l, void *user)
     case VAR_GRIPPER_READY:
         // 夹爪准备抓取
         {
-            shot_to_grip_prepare();
+            move_to_grip_prepare();
         }
         break;
 
