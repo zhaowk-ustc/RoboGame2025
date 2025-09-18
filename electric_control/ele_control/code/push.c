@@ -125,23 +125,6 @@ static void handle_return_movement(void)
 }
 
 /**
- * @brief 处理返回运动模式
- */
-static void handle_return_movement(void)
-{
-    // 设置返回运动方向
-    gpio_set_level(DIRECTION_PIN, DIRECTION_BACKWARD);
-    pwm_set_duty(SPEED_PWM, MOVE_SPEED);
-
-    // 检查是否退回起点
-    if (encoder_count >= TARGET_POSITION)
-    {
-        current_mode = MODE_STOP;
-        printf("Returned to start position.\r\n");
-    }
-}
-
-/**
  * @brief 打印状态信息
  */
 
