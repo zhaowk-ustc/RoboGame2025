@@ -2,6 +2,9 @@
 #include <string.h>   // for memcmp
 #pragma section all "cpu0_dsram"
 
+#define SLOW_GEAR_FRONT_WHEEL_PWM 2400
+#define SLOW_GEAR_BACK_WHEEL_PWM  1300
+
 /* ===================== 全局变量定义 ===================== */
 uint8 raw_packet[GYRO_PACKET_SIZE];
 uint8 packet_index = 0;
@@ -254,47 +257,47 @@ void set_motion(const MotorPattern *pattern, bool is_fast_gear)
     else
     {
         // 慢速状态 - 检查八种模式并设置特定PWM值
-        if (memcmp(pattern, &PATTERN_BACK, sizeof(MotorPattern)) == 0)
+        if (memcmp(pattern, &PATTERN_FRONT, sizeof(MotorPattern)) == 0)
         {
-            pwm_set_duty(FRONT_LEFT_PWM,  1700);
-            pwm_set_duty(FRONT_RIGHT_PWM, 1700);
-            pwm_set_duty(BACK_LEFT_PWM,   1700);
-            pwm_set_duty(BACK_RIGHT_PWM,  1800);
+            pwm_set_duty(FRONT_LEFT_PWM,  SLOW_GEAR_FRONT_WHEEL_PWM);
+            pwm_set_duty(FRONT_RIGHT_PWM, SLOW_GEAR_FRONT_WHEEL_PWM);
+            pwm_set_duty(BACK_LEFT_PWM,   SLOW_GEAR_BACK_WHEEL_PWM);
+            pwm_set_duty(BACK_RIGHT_PWM,  SLOW_GEAR_BACK_WHEEL_PWM);
+        }
+        else if (memcmp(pattern, &PATTERN_BACK, sizeof(MotorPattern)) == 0)
+        {
+            pwm_set_duty(FRONT_LEFT_PWM,  SLOW_GEAR_FRONT_WHEEL_PWM);
+            pwm_set_duty(FRONT_RIGHT_PWM,  SLOW_GEAR_FRONT_WHEEL_PWM);
+            pwm_set_duty(BACK_LEFT_PWM,   SLOW_GEAR_BACK_WHEEL_PWM);
+            pwm_set_duty(BACK_RIGHT_PWM,  SLOW_GEAR_BACK_WHEEL_PWM);
         }
         else if (memcmp(pattern, &PATTERN_RIGHT, sizeof(MotorPattern)) == 0)
         {
-            pwm_set_duty(FRONT_LEFT_PWM,  3175);
-            pwm_set_duty(FRONT_RIGHT_PWM, 3175);
-            pwm_set_duty(BACK_LEFT_PWM,   1400);
-            pwm_set_duty(BACK_RIGHT_PWM,  1400);
+            pwm_set_duty(FRONT_LEFT_PWM,  SLOW_GEAR_FRONT_WHEEL_PWM);
+            pwm_set_duty(FRONT_RIGHT_PWM, SLOW_GEAR_FRONT_WHEEL_PWM);
+            pwm_set_duty(BACK_LEFT_PWM,   SLOW_GEAR_BACK_WHEEL_PWM);
+            pwm_set_duty(BACK_RIGHT_PWM,  SLOW_GEAR_BACK_WHEEL_PWM);
         }
         else if (memcmp(pattern, &PATTERN_LEFT, sizeof(MotorPattern)) == 0)
         {
-            pwm_set_duty(FRONT_LEFT_PWM,  1400);
-            pwm_set_duty(FRONT_RIGHT_PWM, 1400);
-            pwm_set_duty(BACK_LEFT_PWM,   3175);
-            pwm_set_duty(BACK_RIGHT_PWM,  3175);
+            pwm_set_duty(FRONT_LEFT_PWM,  SLOW_GEAR_FRONT_WHEEL_PWM);
+            pwm_set_duty(FRONT_RIGHT_PWM, SLOW_GEAR_FRONT_WHEEL_PWM);
+            pwm_set_duty(BACK_LEFT_PWM,   SLOW_GEAR_BACK_WHEEL_PWM);
+            pwm_set_duty(BACK_RIGHT_PWM,  SLOW_GEAR_BACK_WHEEL_PWM);
         }
         else if (memcmp(pattern, &PATTERN_CCW, sizeof(MotorPattern)) == 0)
         {
-            pwm_set_duty(FRONT_LEFT_PWM,  1400);
-            pwm_set_duty(FRONT_RIGHT_PWM, 3000);
-            pwm_set_duty(BACK_LEFT_PWM,   1400);
-            pwm_set_duty(BACK_RIGHT_PWM,  3000);
+            pwm_set_duty(FRONT_LEFT_PWM,  SLOW_GEAR_FRONT_WHEEL_PWM);
+            pwm_set_duty(FRONT_RIGHT_PWM, SLOW_GEAR_FRONT_WHEEL_PWM);
+            pwm_set_duty(BACK_LEFT_PWM,   SLOW_GEAR_BACK_WHEEL_PWM);
+            pwm_set_duty(BACK_RIGHT_PWM,  SLOW_GEAR_BACK_WHEEL_PWM);
         }
         else if (memcmp(pattern, &PATTERN_CW, sizeof(MotorPattern)) == 0)
         {
-            pwm_set_duty(FRONT_LEFT_PWM,  3000);
-            pwm_set_duty(FRONT_RIGHT_PWM, 1400);
-            pwm_set_duty(BACK_LEFT_PWM,   3000);
-            pwm_set_duty(BACK_RIGHT_PWM,  1400);
-        }
-        else if (memcmp(pattern, &PATTERN_FRONT, sizeof(MotorPattern)) == 0)
-        {
-            pwm_set_duty(FRONT_LEFT_PWM,  2000);
-            pwm_set_duty(FRONT_RIGHT_PWM, 2000);
-            pwm_set_duty(BACK_LEFT_PWM,   2000);
-            pwm_set_duty(BACK_RIGHT_PWM,  2000);
+            pwm_set_duty(FRONT_LEFT_PWM,  SLOW_GEAR_FRONT_WHEEL_PWM);
+            pwm_set_duty(FRONT_RIGHT_PWM, SLOW_GEAR_FRONT_WHEEL_PWM);
+            pwm_set_duty(BACK_LEFT_PWM,   SLOW_GEAR_BACK_WHEEL_PWM);
+            pwm_set_duty(BACK_RIGHT_PWM,  SLOW_GEAR_BACK_WHEEL_PWM);
         }
         else if (memcmp(pattern, &PATTERN_STOP, sizeof(MotorPattern)) == 0)
         {
