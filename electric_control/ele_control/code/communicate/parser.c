@@ -168,6 +168,19 @@ static int on_tlv_callback(uint8_t t, const uint8_t *v, uint8_t l, void *user)
         break;
 
     // ===== G =====
+    case VAR_GET_IMU_YAW:
+        // 获取IMU偏航角
+        {
+            // float yaw = get_imu_yaw();
+            // add_response_to_buffer(VAR_IMU_YAW, &yaw, 4);
+        }
+        break;
+    case VAR_IMU_RESET:
+        // IMU复位
+        {
+            // imu_reset();
+        }
+        break;
     case VAR_ARM_RESET:
         // 夹爪初始化
         {
