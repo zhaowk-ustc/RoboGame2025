@@ -104,12 +104,13 @@ void INS_Init(INS_System *ins);
 void gyro_data_init(void);
 
 // 数据处理函数
-void unpack_and_analyze_imu_data(void);
+void unpack_imu_data(void);
 void parse_gyro_data(uint8 *data, uint8 type);
 uint8 checksum(uint8 *data, uint8 len, uint8 sum);
 
 // 运动控制函数
 void set_motion(const MotorPattern *pattern, bool is_fast_gear);
+void set_yaw(float target_yaw);
 
 // 导航算法函数
 void INS_UpdatePosition(INS_System *ins, GyroData *data);

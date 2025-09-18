@@ -18,8 +18,8 @@ fifo_struct uart_data_fifo;
 const MotorPattern PATTERN_FRONT = {{1, 0, 1, 0, 1, 0, 1, 0}};
 // 后退：所有轮后退
 const MotorPattern PATTERN_BACK = {{0, 1, 0, 1, 0, 1, 0, 1}};
-const MotorPattern PATTERN_CCW = {{0, 1, 1, 0, 0, 1, 1, 0}};
-const MotorPattern PATTERN_CW = {{1, 0, 0, 1, 1, 0, 0, 1}};
+const MotorPattern PATTERN_CCW = {{0, 1, 1, 0, 0, 1, 1, 0}}; // 逆时针
+const MotorPattern PATTERN_CW = {{1, 0, 0, 1, 1, 0, 0, 1}};  // 顺时针
 const MotorPattern PATTERN_LEFT = {{0, 1, 1, 0, 1, 0, 0, 1}};
 const MotorPattern PATTERN_RIGHT = {{1, 0, 0, 1, 0, 1, 1, 0}};
 // 停止
@@ -94,7 +94,7 @@ void gyro_data_init(void)
 }
 
 /* ===================== 数据处理函数 ===================== */
-void unpack_and_analyze_imu_data(void)
+void unpack_imu_data(void)
 {
     // 只在packet_index==0时判断0x55为包头
     uint8 byte = uart_read_byte(READ_UART);
@@ -104,7 +104,7 @@ void unpack_and_analyze_imu_data(void)
         if (byte != 0x55)
         {
             // 不是包头，丢弃
-            return;
+            return false;
         }
     }
     raw_packet[packet_index++] = byte;
@@ -119,8 +119,9 @@ void unpack_and_analyze_imu_data(void)
             if (packet_type == 0x53)
             {
                 print_gyro_data();
-                INS_UpdatePosition(&ins, &gyro_data);
-                INS_PrintData(&ins);
+                return true;
+                // INS_UpdatePosition(&ins, &gyro_data);
+                // INS_PrintData(&ins);
             }
         }
         packet_index = 0;
@@ -282,6 +283,56 @@ void set_motion(const MotorPattern *pattern, bool is_fast_gear)
     }
 }
 
+void set_yaw(float target_yaw)
+{
+    // 允许误差范围
+    const float YAW_TOLERANCE = 1.0f; // 1度内认为到达
+    const int MAX_ITER = 200;         // 防止死循环
+    int iter = 0;
+    float current_yaw = gyro_data.yaw;
+    // 角度归一化到[-180,180]
+    while (target_yaw > 180.0f)
+        target_yaw -= 360.0f;
+    while (target_yaw < -180.0f)
+        target_yaw += 360.0f;
+
+    while (1)
+    {
+        current_yaw = gyro_data.yaw;
+        // 归一化当前角度
+        while (current_yaw > 180.0f)
+            current_yaw -= 360.0f;
+        while (current_yaw < -180.0f)
+            current_yaw += 360.0f;
+
+        float diff = target_yaw - current_yaw;
+        // 处理跨越-180/180的情况
+        if (diff > 180.0f)
+            diff -= 360.0f;
+        if (diff < -180.0f)
+            diff += 360.0f;
+
+        if (fabsf(diff) < YAW_TOLERANCE || iter++ > MAX_ITER)
+        {
+            set_motion(&PATTERN_STOP, false);
+            break;
+        }
+
+        if (diff > 0)
+        {
+            // 目标在当前左侧，逆时针转
+            set_motion(&PATTERN_CCW, SLOW_GEAR);
+        }
+        else
+        {
+            // 目标在当前右侧，顺时针转
+            set_motion(&PATTERN_CW, SLOW_GEAR);
+        }
+
+        system_delay_ms(20);
+    }
+}
+
 /* ===================== 导航算法函数 ===================== */
 void INS_UpdatePosition(INS_System *ins, GyroData *data)
 {
@@ -291,8 +342,8 @@ void INS_UpdatePosition(INS_System *ins, GyroData *data)
     ins->last_update_time = now;
 
     // 1. 读取本体坐标系下的加速度（单位g，需转m/s^2），只保留小数点后三位
-    float ax = (float)((int)(data->accel_x * 1000)) / 1000.0f * 9.8f;
-    float ay = (float)((int)(data->accel_y * 1000)) / 1000.0f * 9.8f;
+    float ax = data->accel_x * 9.8f;
+    float ay = data->accel_y * 9.8f;
     // 2. 获取当前偏航角yaw（单位：度，需转弧度）
     float yaw_rad = data->yaw * M_PI / 180.0f;
 

@@ -1,36 +1,36 @@
 #include "push.h"
 
-/* ===================== å…¨å±€å˜é‡å®šä¹‰ ===================== */
+/* ===================== È«¾Ö±äÁ¿¶¨Òå ===================== */
 int16 encoder_count = 0;
 MovementMode current_mode = MODE_STOP;
 
-/* ===================== ç§æœ‰å‡½æ•°å£°æ˜ ===================== */
+/* ===================== Ë½ÓĞº¯ÊıÉùÃ÷ ===================== */
 static void initialize_hardware(void);
 static void handle_forward_movement(void);
 static void handle_return_movement(void);
 static void handle_stop(void);
 static void print_status_info(void);
 
-/* ===================== å…¬æœ‰å‡½æ•°å®ç° ===================== */
+/* ===================== ¹«ÓĞº¯ÊıÊµÏÖ ===================== */
 
 /**
- * @brief åˆå§‹åŒ–æ¨é€æ¨¡å—
+ * @brief ³õÊ¼»¯ÍÆËÍÄ£¿é
  */
 void push_init(void)
 {
-    initialize_hardware(); // åˆå§‹åŒ–æ‰€æœ‰ç¡¬ä»¶
+    initialize_hardware(); // ³õÊ¼»¯ËùÓĞÓ²¼ş
     encoder_clear_count(ENCODER_MODULE);
     printf("Push module initialized.\r\n");
 }
 
 /**
- * @brief æ›´æ–°æ¨é€æ¨¡å—çŠ¶æ€ï¼ˆä¸»å¾ªç¯ä¸­è°ƒç”¨ï¼‰
+ * @brief ¸üĞÂÍÆËÍÄ£¿é×´Ì¬£¨Ñ­»·ÖĞµ÷ÓÃ£©
  */
 void push_update(void)
 {
-    encoder_count = encoder_get_count(ENCODER_MODULE); // æ›´æ–°ç¼–ç å™¨æ•°æ®
+    encoder_count = encoder_get_count(ENCODER_MODULE); // ¸üĞÂ±àÂëÆ÷Êı¾İ
 
-    // æ ¹æ®å½“å‰æ¨¡å¼å¤„ç†è¿åŠ¨
+    // ¸ù¾İµ±Ç°Ä£Ê½´¦ÀíÔË¶¯
 
     switch (current_mode)
     {
@@ -45,7 +45,7 @@ void push_update(void)
         break;
     }
 
-    print_status_info(); // è¾“å‡ºçŠ¶æ€ä¿¡æ¯
+    print_status_info(); // Êä³ö×´Ì¬ĞÅÏ¢
     system_delay_ms(LOOP_DELAY_MS);
 }
 
@@ -69,31 +69,31 @@ void push_forward_and_back(void)
     }
 }
 
-/* ===================== ç§æœ‰å‡½æ•°å®ç° ===================== */
+/* ===================== Ë½ÓĞº¯ÊıÊµÏÖ ===================== */
 
 /**
- * @brief åˆå§‹åŒ–æ‰€æœ‰ç¡¬ä»¶å¤–è®¾
+ * @brief ³õÊ¼»¯ËùÓĞÓ²¼şÍâÉè
  */
 static void initialize_hardware(void)
 {
-    // åˆå§‹åŒ–ç¼–ç å™¨
+    // ³õÊ¼»¯±àÂëÆ÷
     encoder_dir_init(ENCODER_MODULE, ENCODER_A_PIN, ENCODER_B_PIN);
     encoder_clear_count(ENCODER_MODULE);
 
-    // åˆå§‹åŒ–PWM
+    // ³õÊ¼»¯PWM
     pwm_init(SPEED_PWM, 50, 0);
 
-    // åˆå§‹åŒ–æ–¹å‘æ§åˆ¶GPIO
+    // ³õÊ¼»¯·½Ïò¿ØÖÆGPIO
     gpio_init(DIRECTION_PIN, GPO, GPIO_LOW, GPO_PUSH_PULL);
 }
 
 /**
- * @brief å¤„ç†å‘å‰è¿åŠ¨æ¨¡å¼
+ * @brief ´¦ÀíÏòÇ°ÔË¶¯Ä£Ê½
  */
 
 static void handle_forward_movement(void)
 {
-    // é™å®šç¼–ç å™¨èŒƒå›´
+    // ÏŞ¶¨±àÂëÆ÷·¶Î§
     if (encoder_count <= -TARGET_POSITION)
     {
         current_mode = MODE_RETURN;
@@ -101,37 +101,54 @@ static void handle_forward_movement(void)
         return;
     }
 
-    // è®¾ç½®å‘å‰è¿åŠ¨æ–¹å‘
+    // ÉèÖÃÏòÇ°ÔË¶¯·½Ïò
     gpio_set_level(DIRECTION_PIN, DIRECTION_FORWARD);
     pwm_set_duty(SPEED_PWM, MOVE_SPEED);
 }
 
 /**
- * @brief å¤„ç†è¿”å›è¿åŠ¨æ¨¡å¼
+ * @brief ´¦Àí·µ»ØÔË¶¯Ä£Ê½
  */
 
 static void handle_return_movement(void)
 {
-    // é™å®šç¼–ç å™¨èŒƒå›´
+    // ÏŞ¶¨±àÂëÆ÷·¶Î§
     if (encoder_count >= 0)
     {
         push_stop();
         printf("Reached positive limit, stopped.\r\n");
         return;
     }
-    // è®¾ç½®è¿”å›è¿åŠ¨æ–¹å‘
+    // ÉèÖÃ·µ»ØÔË¶¯·½Ïò
     gpio_set_level(DIRECTION_PIN, DIRECTION_BACKWARD);
     pwm_set_duty(SPEED_PWM, MOVE_SPEED);
 }
 
 /**
- * @brief æ‰“å°çŠ¶æ€ä¿¡æ¯
+ * @brief ´¦Àí·µ»ØÔË¶¯Ä£Ê½
+ */
+static void handle_return_movement(void)
+{
+    // ÉèÖÃ·µ»ØÔË¶¯·½Ïò
+    gpio_set_level(DIRECTION_PIN, DIRECTION_BACKWARD);
+    pwm_set_duty(SPEED_PWM, MOVE_SPEED);
+
+    // ¼ì²éÊÇ·ñÍË»ØÆğµã
+    if (encoder_count >= TARGET_POSITION)
+    {
+        current_mode = MODE_STOP;
+        printf("Returned to start position.\r\n");
+    }
+}
+
+/**
+ * @brief ´òÓ¡×´Ì¬ĞÅÏ¢
  */
 
 static void handle_stop(void)
 {
     pwm_set_duty(SPEED_PWM, 0);
-    // å¯é€‰ï¼šå¯æ·»åŠ å…¶ä»–åœæ­¢æ—¶çš„å¤„ç†é€»è¾‘
+    // ¿ÉÑ¡£º¿ÉÌí¼ÓÆäËûÍ£Ö¹Ê±µÄ´¦ÀíÂß¼­
 }
 
 static void print_status_info(void)
