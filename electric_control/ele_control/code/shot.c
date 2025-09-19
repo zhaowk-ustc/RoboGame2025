@@ -55,16 +55,9 @@ void set_launch_angle(float normalized_input)
     }
 
     // 计算PWM值
-    if (normalized_input <= 0.0f)
-    {
-        // -1到0映射为1250到700
-        pwm_value = 1250.0f + normalized_input * 550.0f;
-    }
-    else
-    {
-        // 0到1映射为700到300
-        pwm_value = 700.0f - normalized_input * 400.0f;
-    }
+    // -1到1映射到300-1100
+    // 公式: pwm = 300 + (normalized_input + 1.0f) * 400
+    pwm_value = 300 + (normalized_input + 1.0f) * 400;
 
     pwm_set_duty(LUANCH_SERVOR, pwm_value);
 }
