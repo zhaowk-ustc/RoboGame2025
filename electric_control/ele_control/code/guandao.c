@@ -255,17 +255,17 @@ void set_motion(const MotorPattern *pattern, bool is_fast_gear)
         // 慢速状态 - 检查八种模式并设置特定PWM值
         if (memcmp(pattern, &PATTERN_FRONT, sizeof(MotorPattern)) == 0)
         {
-            pwm_set_duty(FRONT_LEFT_PWM, SLOW_GEAR_FRONT_WHEEL_PWM);
-            pwm_set_duty(FRONT_RIGHT_PWM, SLOW_GEAR_FRONT_WHEEL_PWM);
-            pwm_set_duty(BACK_LEFT_PWM, SLOW_GEAR_BACK_WHEEL_PWM);
-            pwm_set_duty(BACK_RIGHT_PWM, SLOW_GEAR_BACK_WHEEL_PWM);
+            pwm_set_duty(FRONT_LEFT_PWM, 2300);
+            pwm_set_duty(FRONT_RIGHT_PWM, 2300);
+            pwm_set_duty(BACK_LEFT_PWM, 2300);
+            pwm_set_duty(BACK_RIGHT_PWM, 2300);
         }
         else if (memcmp(pattern, &PATTERN_BACK, sizeof(MotorPattern)) == 0)
         {
-            pwm_set_duty(FRONT_LEFT_PWM, SLOW_GEAR_FRONT_WHEEL_PWM);
-            pwm_set_duty(FRONT_RIGHT_PWM, SLOW_GEAR_FRONT_WHEEL_PWM);
-            pwm_set_duty(BACK_LEFT_PWM, SLOW_GEAR_BACK_WHEEL_PWM);
-            pwm_set_duty(BACK_RIGHT_PWM, SLOW_GEAR_BACK_WHEEL_PWM);
+            pwm_set_duty(FRONT_LEFT_PWM, 2300);
+            pwm_set_duty(FRONT_RIGHT_PWM, 2300);
+            pwm_set_duty(BACK_LEFT_PWM, 2300);
+            pwm_set_duty(BACK_RIGHT_PWM, 2300);
         }
         else if (memcmp(pattern, &PATTERN_RIGHT, sizeof(MotorPattern)) == 0)
         {
