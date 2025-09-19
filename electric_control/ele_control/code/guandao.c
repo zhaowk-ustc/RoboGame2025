@@ -2,9 +2,6 @@
 #include <string.h> // for memcmp
 #pragma section all "cpu0_dsram"
 
-#define SLOW_GEAR_FRONT_WHEEL_PWM 2400
-#define SLOW_GEAR_BACK_WHEEL_PWM 1300
-
 /* ===================== 全局变量定义 ===================== */
 uint8 raw_packet[GYRO_PACKET_SIZE];
 uint8 packet_index = 0;
@@ -245,8 +242,8 @@ void set_motion(const MotorPattern *pattern, bool is_fast_gear)
         }
         else
         {
-            uint32 front_pwm = FAST_GEAR_FRONT_WHEEL_PWM;
-            uint32 back_pwm = FAST_GEAR_BACK_WHEEL_PWM;
+            uint32 front_pwm = FAST_GEAR_FRONT_BACK_PWM;
+            uint32 back_pwm = FAST_GEAR_LEFT_RIGHT_PWM;
             pwm_set_duty(FRONT_LEFT_PWM, front_pwm);
             pwm_set_duty(FRONT_RIGHT_PWM, front_pwm);
             pwm_set_duty(BACK_LEFT_PWM, back_pwm);
