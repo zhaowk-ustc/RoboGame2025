@@ -1,9 +1,9 @@
 #include "guandao.h"
-#include <string.h>   // for memcmp
+#include <string.h> // for memcmp
 #pragma section all "cpu0_dsram"
 
 #define SLOW_GEAR_FRONT_WHEEL_PWM 2400
-#define SLOW_GEAR_BACK_WHEEL_PWM  1300
+#define SLOW_GEAR_BACK_WHEEL_PWM 1300
 
 /* ===================== 全局变量定义 ===================== */
 uint8 raw_packet[GYRO_PACKET_SIZE];
@@ -14,26 +14,27 @@ INS_System ins;
 
 // 软 FIFO：中断写入，业务读取
 fifo_struct uart_data_fifo;
-static uint8 uart_fifo_buf[GYRO_DATA_BUFFER_SIZE];  // 缓冲区
+static uint8 uart_fifo_buf[GYRO_DATA_BUFFER_SIZE]; // 缓冲区
 
 /* ===================== 常量定义 ===================== */
 // 新顺序：FRONT_LEFT_PIN1, FRONT_LEFT_PIN2, FRONT_RIGHT_PIN1, FRONT_RIGHT_PIN2, BACK_LEFT_PIN1, BACK_LEFT_PIN2, BACK_RIGHT_PIN1, BACK_RIGHT_PIN2
 // 前进：所有轮前进
 const MotorPattern PATTERN_FRONT = {{1, 0, 1, 0, 1, 0, 1, 0}};
 // 后退：所有轮后退
-const MotorPattern PATTERN_BACK  = {{0, 1, 0, 1, 0, 1, 0, 1}};
-const MotorPattern PATTERN_CCW   = {{0, 1, 1, 0, 0, 1, 1, 0}}; // 逆时针
-const MotorPattern PATTERN_CW    = {{1, 0, 0, 1, 1, 0, 0, 1}}; // 顺时针
-const MotorPattern PATTERN_LEFT  = {{0, 1, 1, 0, 1, 0, 0, 1}};
+const MotorPattern PATTERN_BACK = {{0, 1, 0, 1, 0, 1, 0, 1}};
+const MotorPattern PATTERN_CCW = {{0, 1, 1, 0, 0, 1, 1, 0}}; // 逆时针
+const MotorPattern PATTERN_CW = {{1, 0, 0, 1, 1, 0, 0, 1}};  // 顺时针
+const MotorPattern PATTERN_LEFT = {{0, 1, 1, 0, 1, 0, 0, 1}};
 const MotorPattern PATTERN_RIGHT = {{1, 0, 0, 1, 0, 1, 1, 0}};
 // 停止
-const MotorPattern PATTERN_STOP  = {{0, 0, 0, 0, 0, 0, 0, 0}};
+const MotorPattern PATTERN_STOP = {{0, 0, 0, 0, 0, 0, 0, 0}};
 
 /* ===================== 内部小工具 ===================== */
 // 有些平台仅提供 fifo_read_buffer，这里包装成读 1 字节的帮助函数
 static inline bool fifo_read_byte(fifo_struct *f, uint8 *out)
 {
-    if (out == NULL) return false;
+    if (out == NULL)
+        return false;
     uint32 length = 1;
     fifo_state_enum result = fifo_read_buffer(f, out, &length, FIFO_READ_AND_CLEAN);
     return (result == FIFO_SUCCESS && length == 1);
@@ -54,12 +55,12 @@ void guandao_init(void)
     fifo_init(&uart_data_fifo, FIFO_DATA_8BIT, uart_fifo_buf, GYRO_DATA_BUFFER_SIZE);
 
     // IMU 初始化（需要 UART 已就绪）
-    imu_init();
+    imu_reset();
 
     // 如需打印：uart_write_string(READ_UART, "Guandao System Initialized.\r\n");
 }
 
-void imu_init(void)
+void imu_reset(void)
 {
     // 与 guandao_init 中一致：走 READ_UART
     uint8 tx_data[] = {0xFF, 0xAA, 0x67};
@@ -73,17 +74,16 @@ void motion_init(void)
         FRONT_LEFT_PIN1, FRONT_LEFT_PIN2,
         FRONT_RIGHT_PIN1, FRONT_RIGHT_PIN2,
         BACK_LEFT_PIN1, BACK_LEFT_PIN2,
-        BACK_RIGHT_PIN1, BACK_RIGHT_PIN2
-    };
+        BACK_RIGHT_PIN1, BACK_RIGHT_PIN2};
     for (int i = 0; i < 8; i++)
     {
         gpio_init(gpio_pins[i], GPO, GPIO_LOW, GPO_PUSH_PULL);
     }
 
     // 初始化PWM
-    pwm_init(BACK_LEFT_PWM,  5000, 0);
+    pwm_init(BACK_LEFT_PWM, 5000, 0);
     pwm_init(BACK_RIGHT_PWM, 5000, 0);
-    pwm_init(FRONT_RIGHT_PWM,5000, 0);
+    pwm_init(FRONT_RIGHT_PWM, 5000, 0);
     pwm_init(FRONT_LEFT_PWM, 5000, 0);
 }
 
@@ -104,12 +104,12 @@ void gyro_data_init(void)
     gyro_data.accel_x = 0.0f;
     gyro_data.accel_y = 0.0f;
     gyro_data.accel_z = 0.0f;
-    gyro_data.gyro_x  = 0.0f;
-    gyro_data.gyro_y  = 0.0f;
-    gyro_data.gyro_z  = 0.0f;
-    gyro_data.roll    = 0.0f;
-    gyro_data.pitch   = 0.0f;
-    gyro_data.yaw     = 0.0f;
+    gyro_data.gyro_x = 0.0f;
+    gyro_data.gyro_y = 0.0f;
+    gyro_data.gyro_z = 0.0f;
+    gyro_data.roll = 0.0f;
+    gyro_data.pitch = 0.0f;
+    gyro_data.yaw = 0.0f;
 }
 
 /* ===================== 数据处理函数 ===================== */
@@ -149,9 +149,9 @@ bool unpack_imu_data(void)
                 print_gyro_data();
                 // INS_UpdatePosition(&ins, &gyro_data);
                 // INS_PrintData(&ins);
-                return true;  // 成功解析到角度包
+                return true; // 成功解析到角度包
             }
-            return false;     // 解析到非角度包
+            return false; // 解析到非角度包
         }
         else
         {
@@ -192,13 +192,13 @@ void parse_gyro_data(uint8 *data, uint8 type)
     }
     case 0x53: // 欧拉角
     {
-        int16 roll  = (data[3] << 8) | data[2];
+        int16 roll = (data[3] << 8) | data[2];
         int16 pitch = (data[5] << 8) | data[4];
-        int16 yaw   = (data[7] << 8) | data[6];
+        int16 yaw = (data[7] << 8) | data[6];
 
-        gyro_data.roll  = (float)roll  / 32768.0f * 180.0f;
+        gyro_data.roll = (float)roll / 32768.0f * 180.0f;
         gyro_data.pitch = (float)pitch / 32768.0f * 180.0f;
-        gyro_data.yaw   = (float)yaw   / 32768.0f * 180.0f;
+        gyro_data.yaw = (float)yaw / 32768.0f * 180.0f;
         break;
     }
     default:
@@ -220,11 +220,10 @@ bool checksum(const uint8 *data, uint8 len, uint8 sum)
 void set_motion(const MotorPattern *pattern, bool is_fast_gear)
 {
     const uint32 pins[8] = {
-        FRONT_LEFT_PIN1,  FRONT_LEFT_PIN2,
+        FRONT_LEFT_PIN1, FRONT_LEFT_PIN2,
         FRONT_RIGHT_PIN1, FRONT_RIGHT_PIN2,
-        BACK_LEFT_PIN1,   BACK_LEFT_PIN2,
-        BACK_RIGHT_PIN1,  BACK_RIGHT_PIN2
-    };
+        BACK_LEFT_PIN1, BACK_LEFT_PIN2,
+        BACK_RIGHT_PIN1, BACK_RIGHT_PIN2};
 
     // 设置GPIO电平
     for (int i = 0; i < 8; i++)
@@ -236,22 +235,22 @@ void set_motion(const MotorPattern *pattern, bool is_fast_gear)
     {
         // 快速状态
         if (memcmp(pattern, &PATTERN_FRONT, sizeof(MotorPattern)) == 0 ||
-            memcmp(pattern, &PATTERN_BACK,  sizeof(MotorPattern)) == 0)
+            memcmp(pattern, &PATTERN_BACK, sizeof(MotorPattern)) == 0)
         {
             uint32 pwm_value = FAST_GEAR_FRONT_BACK_PWM;
-            pwm_set_duty(FRONT_LEFT_PWM,  pwm_value);
+            pwm_set_duty(FRONT_LEFT_PWM, pwm_value);
             pwm_set_duty(FRONT_RIGHT_PWM, pwm_value);
-            pwm_set_duty(BACK_LEFT_PWM,   pwm_value);
-            pwm_set_duty(BACK_RIGHT_PWM,  pwm_value);
+            pwm_set_duty(BACK_LEFT_PWM, pwm_value);
+            pwm_set_duty(BACK_RIGHT_PWM, pwm_value);
         }
         else
         {
             uint32 front_pwm = FAST_GEAR_FRONT_WHEEL_PWM;
-            uint32 back_pwm  = FAST_GEAR_BACK_WHEEL_PWM;
-            pwm_set_duty(FRONT_LEFT_PWM,  front_pwm);
+            uint32 back_pwm = FAST_GEAR_BACK_WHEEL_PWM;
+            pwm_set_duty(FRONT_LEFT_PWM, front_pwm);
             pwm_set_duty(FRONT_RIGHT_PWM, front_pwm);
-            pwm_set_duty(BACK_LEFT_PWM,   back_pwm);
-            pwm_set_duty(BACK_RIGHT_PWM,  back_pwm);
+            pwm_set_duty(BACK_LEFT_PWM, back_pwm);
+            pwm_set_duty(BACK_RIGHT_PWM, back_pwm);
         }
     }
     else
@@ -259,61 +258,66 @@ void set_motion(const MotorPattern *pattern, bool is_fast_gear)
         // 慢速状态 - 检查八种模式并设置特定PWM值
         if (memcmp(pattern, &PATTERN_FRONT, sizeof(MotorPattern)) == 0)
         {
-            pwm_set_duty(FRONT_LEFT_PWM,  SLOW_GEAR_FRONT_WHEEL_PWM);
+            pwm_set_duty(FRONT_LEFT_PWM, SLOW_GEAR_FRONT_WHEEL_PWM);
             pwm_set_duty(FRONT_RIGHT_PWM, SLOW_GEAR_FRONT_WHEEL_PWM);
-            pwm_set_duty(BACK_LEFT_PWM,   SLOW_GEAR_BACK_WHEEL_PWM);
-            pwm_set_duty(BACK_RIGHT_PWM,  SLOW_GEAR_BACK_WHEEL_PWM);
+            pwm_set_duty(BACK_LEFT_PWM, SLOW_GEAR_BACK_WHEEL_PWM);
+            pwm_set_duty(BACK_RIGHT_PWM, SLOW_GEAR_BACK_WHEEL_PWM);
         }
         else if (memcmp(pattern, &PATTERN_BACK, sizeof(MotorPattern)) == 0)
         {
-            pwm_set_duty(FRONT_LEFT_PWM,  SLOW_GEAR_FRONT_WHEEL_PWM);
-            pwm_set_duty(FRONT_RIGHT_PWM,  SLOW_GEAR_FRONT_WHEEL_PWM);
-            pwm_set_duty(BACK_LEFT_PWM,   SLOW_GEAR_BACK_WHEEL_PWM);
-            pwm_set_duty(BACK_RIGHT_PWM,  SLOW_GEAR_BACK_WHEEL_PWM);
+            pwm_set_duty(FRONT_LEFT_PWM, SLOW_GEAR_FRONT_WHEEL_PWM);
+            pwm_set_duty(FRONT_RIGHT_PWM, SLOW_GEAR_FRONT_WHEEL_PWM);
+            pwm_set_duty(BACK_LEFT_PWM, SLOW_GEAR_BACK_WHEEL_PWM);
+            pwm_set_duty(BACK_RIGHT_PWM, SLOW_GEAR_BACK_WHEEL_PWM);
         }
         else if (memcmp(pattern, &PATTERN_RIGHT, sizeof(MotorPattern)) == 0)
         {
-            pwm_set_duty(FRONT_LEFT_PWM,  SLOW_GEAR_FRONT_WHEEL_PWM);
+            pwm_set_duty(FRONT_LEFT_PWM, SLOW_GEAR_FRONT_WHEEL_PWM);
             pwm_set_duty(FRONT_RIGHT_PWM, SLOW_GEAR_FRONT_WHEEL_PWM);
-            pwm_set_duty(BACK_LEFT_PWM,   SLOW_GEAR_BACK_WHEEL_PWM);
-            pwm_set_duty(BACK_RIGHT_PWM,  SLOW_GEAR_BACK_WHEEL_PWM);
+            pwm_set_duty(BACK_LEFT_PWM, SLOW_GEAR_BACK_WHEEL_PWM);
+            pwm_set_duty(BACK_RIGHT_PWM, SLOW_GEAR_BACK_WHEEL_PWM);
         }
         else if (memcmp(pattern, &PATTERN_LEFT, sizeof(MotorPattern)) == 0)
         {
-            pwm_set_duty(FRONT_LEFT_PWM,  SLOW_GEAR_FRONT_WHEEL_PWM);
+            pwm_set_duty(FRONT_LEFT_PWM, SLOW_GEAR_FRONT_WHEEL_PWM);
             pwm_set_duty(FRONT_RIGHT_PWM, SLOW_GEAR_FRONT_WHEEL_PWM);
-            pwm_set_duty(BACK_LEFT_PWM,   SLOW_GEAR_BACK_WHEEL_PWM);
-            pwm_set_duty(BACK_RIGHT_PWM,  SLOW_GEAR_BACK_WHEEL_PWM);
+            pwm_set_duty(BACK_LEFT_PWM, SLOW_GEAR_BACK_WHEEL_PWM);
+            pwm_set_duty(BACK_RIGHT_PWM, SLOW_GEAR_BACK_WHEEL_PWM);
         }
         else if (memcmp(pattern, &PATTERN_CCW, sizeof(MotorPattern)) == 0)
         {
-            pwm_set_duty(FRONT_LEFT_PWM,  SLOW_GEAR_FRONT_WHEEL_PWM);
+            pwm_set_duty(FRONT_LEFT_PWM, SLOW_GEAR_FRONT_WHEEL_PWM);
             pwm_set_duty(FRONT_RIGHT_PWM, SLOW_GEAR_FRONT_WHEEL_PWM);
-            pwm_set_duty(BACK_LEFT_PWM,   SLOW_GEAR_BACK_WHEEL_PWM);
-            pwm_set_duty(BACK_RIGHT_PWM,  SLOW_GEAR_BACK_WHEEL_PWM);
+            pwm_set_duty(BACK_LEFT_PWM, SLOW_GEAR_BACK_WHEEL_PWM);
+            pwm_set_duty(BACK_RIGHT_PWM, SLOW_GEAR_BACK_WHEEL_PWM);
         }
         else if (memcmp(pattern, &PATTERN_CW, sizeof(MotorPattern)) == 0)
         {
-            pwm_set_duty(FRONT_LEFT_PWM,  SLOW_GEAR_FRONT_WHEEL_PWM);
+            pwm_set_duty(FRONT_LEFT_PWM, SLOW_GEAR_FRONT_WHEEL_PWM);
             pwm_set_duty(FRONT_RIGHT_PWM, SLOW_GEAR_FRONT_WHEEL_PWM);
-            pwm_set_duty(BACK_LEFT_PWM,   SLOW_GEAR_BACK_WHEEL_PWM);
-            pwm_set_duty(BACK_RIGHT_PWM,  SLOW_GEAR_BACK_WHEEL_PWM);
+            pwm_set_duty(BACK_LEFT_PWM, SLOW_GEAR_BACK_WHEEL_PWM);
+            pwm_set_duty(BACK_RIGHT_PWM, SLOW_GEAR_BACK_WHEEL_PWM);
         }
         else if (memcmp(pattern, &PATTERN_STOP, sizeof(MotorPattern)) == 0)
         {
-            pwm_set_duty(FRONT_LEFT_PWM,  0);
+            pwm_set_duty(FRONT_LEFT_PWM, 0);
             pwm_set_duty(FRONT_RIGHT_PWM, 0);
-            pwm_set_duty(BACK_LEFT_PWM,   0);
-            pwm_set_duty(BACK_RIGHT_PWM,  0);
+            pwm_set_duty(BACK_LEFT_PWM, 0);
+            pwm_set_duty(BACK_RIGHT_PWM, 0);
         }
         else
         {
-            pwm_set_duty(FRONT_LEFT_PWM,  0);
+            pwm_set_duty(FRONT_LEFT_PWM, 0);
             pwm_set_duty(FRONT_RIGHT_PWM, 0);
-            pwm_set_duty(BACK_LEFT_PWM,   0);
-            pwm_set_duty(BACK_RIGHT_PWM,  0);
+            pwm_set_duty(BACK_LEFT_PWM, 0);
+            pwm_set_duty(BACK_RIGHT_PWM, 0);
         }
     }
+}
+
+float get_imu_yaw()
+{
+    return gyro_data.yaw;
 }
 
 // void set_yaw(float target_yaw)
@@ -406,9 +410,9 @@ void print_gyro_data(void)
     printf("Accel: X=%.4f Y=%.4f Z=%.4f g\r\n",
            gyro_data.accel_x, gyro_data.accel_y, gyro_data.accel_z);
     printf("Gyro:  X=%.2f Y=%.2f Z=%.2f °/s\r\n",
-           gyro_data.gyro_x,  gyro_data.gyro_y,  gyro_data.gyro_z);
+           gyro_data.gyro_x, gyro_data.gyro_y, gyro_data.gyro_z);
     printf("Angle: Roll=%.2f Pitch=%.2f Yaw=%.2f °\r\n\r\n",
-           gyro_data.roll,    gyro_data.pitch,   gyro_data.yaw);
+           gyro_data.roll, gyro_data.pitch, gyro_data.yaw);
 }
 
 void INS_PrintData(INS_System *ins_sys)

@@ -3,7 +3,7 @@
 
 #include "zf_common_headfile.h"
 #include <math.h>
-#include <stdbool.h>   // 新增：使用 bool/true/false
+#include <stdbool.h> // 新增：使用 bool/true/false
 
 /* ===================== 硬件引脚定义 ===================== */
 #define READ_UART (UART_3)
@@ -15,34 +15,34 @@
 // #define TC264_TX_PIN (UART0_TX_P14_0)
 // #define TC264_RX_PIN (UART0_RX_P14_1)
 
-#define BACK_LEFT_PIN1  (P11_10)
-#define BACK_LEFT_PIN2  (P11_11)
+#define BACK_LEFT_PIN1 (P11_10)
+#define BACK_LEFT_PIN2 (P11_11)
 #define BACK_RIGHT_PIN1 (P10_3)
 #define BACK_RIGHT_PIN2 (P11_12)
 #define FRONT_RIGHT_PIN1 (P02_1)
 #define FRONT_RIGHT_PIN2 (P00_2)
-#define FRONT_LEFT_PIN1  (P02_2)
-#define FRONT_LEFT_PIN2  (P10_1)
+#define FRONT_LEFT_PIN1 (P02_2)
+#define FRONT_LEFT_PIN2 (P10_1)
 
-#define BACK_LEFT_PWM   (ATOM1_CH3_P02_3)
-#define BACK_RIGHT_PWM  (ATOM1_CH4_P02_4)
+#define BACK_LEFT_PWM (ATOM1_CH3_P02_3)
+#define BACK_RIGHT_PWM (ATOM1_CH4_P02_4)
 #define FRONT_RIGHT_PWM (ATOM1_CH5_P02_5)
-#define FRONT_LEFT_PWM  (ATOM1_CH6_P02_6)
+#define FRONT_LEFT_PWM (ATOM1_CH6_P02_6)
 
 // 档位宏定义
 #define FAST_GEAR 1
 #define SLOW_GEAR 0
 
 #define FAST_FRONT_TIME_MS 4250
-#define FAST_LEFT_TIME_MS  6250
+#define FAST_LEFT_TIME_MS 6250
 
 #define FAST_GEAR_FRONT_BACK_PWM 4000
 #define FAST_GEAR_FRONT_WHEEL_PWM 5250
-#define FAST_GEAR_BACK_WHEEL_PWM  3400
+#define FAST_GEAR_BACK_WHEEL_PWM 3400
 
 #define SLOW_GEAR_FRONT_BACK_PWM 3000
 #define SLOW_GEAR_FRONT_WHEEL_PWM 3210
-#define SLOW_GEAR_BACK_WHEEL_PWM  1500
+#define SLOW_GEAR_BACK_WHEEL_PWM 1500
 
 #define UART_BAUDRATE (115200)
 #define GYRO_DATA_BUFFER_SIZE 128
@@ -99,16 +99,16 @@ extern INS_System ins;
 /* ===================== 函数声明 ===================== */
 // 初始化函数
 void guandao_init(void);
-void imu_init(void);
+void imu_reset(void);
 void motion_init(void);
 void INS_Init(INS_System *ins);
 void gyro_data_init(void);
 
 // 数据处理函数
-bool unpack_imu_data(void);                                   // 修改：返回 bool
+bool unpack_imu_data(void); // 修改：返回 bool
 void parse_gyro_data(uint8 *data, uint8 type);
-bool checksum(const uint8 *data, uint8 len, uint8 sum);       // 修改：返回 bool
-
+bool checksum(const uint8 *data, uint8 len, uint8 sum); // 修改：返回 bool
+float get_imu_yaw(void);
 // 运动控制函数
 void set_motion(const MotorPattern *pattern, bool is_fast_gear);
 // void set_yaw(float target_yaw);

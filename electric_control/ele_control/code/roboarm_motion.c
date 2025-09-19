@@ -13,6 +13,7 @@
 // 预设位置参数
 #define GRIPPER_CLOSE 460
 #define GRIPPER_OPEN 250
+#define GRIPPER_MOVE_TIME_MS 300 // 爪子单独运动时间
 
 #define VERTICAL_DABI 580
 #define GRIP_DI 970
@@ -126,7 +127,7 @@ static void arm_set_pwm(ServoPositions pos)
     pwm_set_duty(GRIPPER_PWM, pos.gripper);
 }
 
-static void move_pose_smoothly(ServoPositions target_pos, int16 time_ms)
+static void move_pose_smoothly(ServoPositions target_pos, int16_t time_ms)
 {
     // 计算每个舵机的移动距离
     int diff_di = target_pos.di - current_pos.di;
@@ -141,13 +142,22 @@ static void move_pose_smoothly(ServoPositions target_pos, int16 time_ms)
     if (total_steps <= 0)
         total_steps = 1;
 
-    // 计算每步的移动量
+    // 爪子独立步数计算（300ms内完成）
+    int gripper_steps = GRIPPER_MOVE_TIME_MS / SMOOTH_DELAY_MS;
+    if (gripper_steps <= 0)
+        gripper_steps = 1;
+    if (gripper_steps > total_steps)
+        gripper_steps = total_steps;
+
+    // 计算每步的移动量（其他关节）
     float step_di = (float)diff_di / total_steps;
     float step_dabi = (float)diff_dabi / total_steps;
     float step_zhongbi = (float)diff_zhongbi / total_steps;
     float step_xiaobi = (float)diff_xiaobi / total_steps;
     float step_shouwan = (float)diff_shouwan / total_steps;
-    float step_gripper = (float)diff_gripper / total_steps;
+
+    // 计算爪子每步移动量（独立速度）
+    float step_gripper = (float)diff_gripper / gripper_steps;
 
     // 记录起始位置
     ServoPositions start_pos = current_pos;
@@ -155,15 +165,27 @@ static void move_pose_smoothly(ServoPositions target_pos, int16 time_ms)
     // 逐步移动到目标位置
     for (int step = 1; step <= total_steps; step++)
     {
-        // 计算当前步的目标位置
+        // 计算当前步的目标位置（其他关节）
         int target_di = start_pos.di + (int)(step_di * step);
         int target_dabi = start_pos.dabi + (int)(step_dabi * step);
         int target_zhongbi = start_pos.zhongbi + (int)(step_zhongbi * step);
         int target_xiaobi = start_pos.xiaobi + (int)(step_xiaobi * step);
         int target_shouwan = start_pos.shouwan + (int)(step_shouwan * step);
-        int target_gripper = start_pos.gripper + (int)(step_gripper * step);
 
-        // 在最后一步，确保到达精确的目标位置
+        // 计算爪子位置（独立时间控制）
+        int target_gripper;
+        if (step <= gripper_steps)
+        {
+            // 爪子在前gripper_steps步内完成移动
+            target_gripper = start_pos.gripper + (int)(step_gripper * step);
+        }
+        else
+        {
+            // 爪子已经到达目标，保持位置
+            target_gripper = target_pos.gripper;
+        }
+
+        // 在最后一步，确保所有关节到达精确的目标位置
         if (step == total_steps)
         {
             target_di = target_pos.di;

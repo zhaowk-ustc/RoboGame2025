@@ -43,7 +43,7 @@
 #include "communicate/parser.h"
 #include "communicate/sender.h"
 
-sender_status_t sender_callback(const uint8_t* data, size_t len, void* user_data)
+sender_status_t sender_callback(const uint8_t *data, size_t len, void *user_data)
 {
     uart_write_buffer(UART_0, data, len);
     return SENDER_OK;
@@ -65,7 +65,7 @@ int core0_main(void)
     // 此处编写用户代码 例如外设初始化代码等
     cpu_wait_event_ready(); // 等待所有核心初始化完毕
 
-    imu_init();
+    imu_reset();
     while (TRUE)
     {
         // 此处编写需要循环执行的代码
@@ -76,8 +76,8 @@ int core0_main(void)
         {
             parser_feed_stream(read_data, fifo_data_size);
         }
-//        system_delay_ms(100);
-//        sender_send_u8(VAR_HEARTBEAT, 0x00);
+        //        system_delay_ms(100);
+        //        sender_send_u8(VAR_HEARTBEAT, 0x00);
 
         // 此处编写需要循环执行的代码
     }
