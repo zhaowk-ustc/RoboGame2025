@@ -18,6 +18,7 @@ void shot_init(void)
     pwm_init(SHOT_BACK_LEFT, PWM_FREQ, 0);
     pwm_init(SHOT_BACK_RIGHT, PWM_FREQ, 0);
     pwm_init(LUANCH_SERVOR, PWM_FREQ, 0);
+    bldc_init();
 }
 
 void bldc_init(void)
