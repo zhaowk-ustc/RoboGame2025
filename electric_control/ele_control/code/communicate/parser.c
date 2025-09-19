@@ -253,10 +253,12 @@ static int on_tlv_callback(uint8_t t, const uint8_t *v, uint8_t l, void *user)
 
     case VAR_TURRET_ANGLE_YAW:
         // 云台/炮塔偏航角 (4字节 float)
-        // TODO: 角度闭环或前馈控制；此处仅占位解析
         {
-            float value;
-            set_launch_angle(value);
+            float value = 0.0f;
+            if (data_read_f32le(v, 4, &value) == DATA_OK)
+            {
+                set_launch_angle(value);
+            }
         }
         break;
 
