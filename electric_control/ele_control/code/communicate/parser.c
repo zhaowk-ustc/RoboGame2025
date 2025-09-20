@@ -171,8 +171,15 @@ static int on_tlv_callback(uint8_t t, const uint8_t *v, uint8_t l, void *user)
     case VAR_GET_IMU_YAW:
         // 获取IMU偏航角
         {
+            while (1)
+            {
+                if (unpack_imu_data())
+                {
+                    break;
+                }
+            }
             float yaw = get_imu_yaw();
-            // add_response_to_buffer(VAR_IMU_YAW, &yaw, 4);
+            add_response_to_buffer(VAR_IMU_YAW, &yaw, 4);
         }
         break;
     case VAR_IMU_RESET:

@@ -61,7 +61,9 @@ void imu_reset(void)
 {
     // 与 guandao_init 中一致：走 READ_UART
     uint8 tx_data[] = {0xFF, 0xAA, 0x67};
-    uart_write_buffer(READ_UART, tx_data, sizeof(tx_data));
+    uart_write_buffer(READ_UART, tx_data, sizeof(tx_data)); // 复位加速度
+    uint8 tx_data2[] = {0xFF, 0xAA, 0x52};
+    uart_write_buffer(READ_UART, tx_data2, sizeof(tx_data2)); // 复位角度
 }
 
 void motion_init(void)
@@ -113,10 +115,7 @@ void gyro_data_init(void)
 bool unpack_imu_data(void)
 {
     uint8 byte;
-    if (!fifo_read_byte(&uart_data_fifo, &byte))
-    {
-        return false; // 暂无数据
-    }
+    byte = uart_read_byte(READ_UART);
 
     if (packet_index == 0)
     {
@@ -144,9 +143,9 @@ bool unpack_imu_data(void)
             if (packet_type == 0x53)
             {
                 print_gyro_data();
+                return true; // 成功处理0x53包
                 // INS_UpdatePosition(&ins, &gyro_data);
                 // INS_PrintData(&ins);
-                return true; // 成功解析到角度包
             }
             return false; // 解析到非角度包
         }
@@ -154,11 +153,11 @@ bool unpack_imu_data(void)
         {
             // 校验失败，丢弃本包，从头同步
             packet_index = 0;
-            return false;
+            return false; // 添加返回值
         }
     }
 
-    return false; // 尚未凑齐一包
+    return false; // 数据包未完成，继续接收
 }
 
 void parse_gyro_data(uint8 *data, uint8 type)
