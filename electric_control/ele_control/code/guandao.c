@@ -241,8 +241,8 @@ void set_motion(const MotorPattern *pattern, bool is_fast_gear)
         }
         else
         {
-            uint32 front_pwm = FAST_GEAR_FRONT_BACK_PWM;
-            uint32 back_pwm = FAST_GEAR_LEFT_RIGHT_PWM;
+            uint32 front_pwm = FAST_GEAR_LEFT_RIGHT_PWM;
+            uint32 back_pwm = FAST_GEAR_FRONT_BACK_PWM;
             pwm_set_duty(FRONT_LEFT_PWM, front_pwm);
             pwm_set_duty(FRONT_RIGHT_PWM, front_pwm);
             pwm_set_duty(BACK_LEFT_PWM, back_pwm);
