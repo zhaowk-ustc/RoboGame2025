@@ -136,6 +136,11 @@ static int on_tlv_callback(uint8_t t, const uint8_t* v, uint8_t l, void* user)
             arm_reset_to_prepare();
             break;
 
+        case VAR_ARM_RESET_TO_STORE:
+            // 初始化 -> 存储位
+            // TODO: 补齐具体动作函数，例如 arm_reset_to_store()
+            break;
+
         case VAR_ARM_SHOT_TO_RESET:
             // 射击位 -> 初始化
             arm_shot_to_reset();
