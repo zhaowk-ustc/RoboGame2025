@@ -252,6 +252,7 @@ static int on_tlv_callback(uint8_t t, const uint8_t *v, uint8_t l, void *user)
         // 送料/管道推弹一次
         // TODO: 若 guandao_push_once() 可用，则启用
         // guandao_push_once();
+        push_forward_and_back();
         break;
 
         /* ===== E: ERROR (reserved for echo back) ===== */
@@ -278,12 +279,14 @@ static int on_tlv_callback(uint8_t t, const uint8_t *v, uint8_t l, void *user)
         // 摩擦轮启动
         // TODO: 替换为你项目中的实际接口，如 shot_friction_start()
         // shot_friction_start();
+        bldc_set_speed(1200);
         break;
 
     case VAR_FRICTION_WHEEL_STOP:
         // 摩擦轮停止
         // TODO: 替换为你项目中的实际接口，如 shot_friction_stop()
         // shot_friction_stop();
+        bldc_set_speed(1000);
         break;
 
         /* ===== G: GET/IMU ===== */
