@@ -10,6 +10,7 @@
 // 定义变量（在.c文件中）
 const pwm_channel_enum channel_list[4] = {SHOT_FRONT_LEFT, SHOT_FRONT_RIGHT, SHOT_BACK_LEFT, SHOT_BACK_RIGHT};
 uint16_t esc_throttle[4] = {0, 0, 0, 0};
+float voltage_feedback;
 
 void shot_init(void)
 {
@@ -18,6 +19,7 @@ void shot_init(void)
     pwm_init(SHOT_BACK_LEFT, PWM_FREQ, 0);
     pwm_init(SHOT_BACK_RIGHT, PWM_FREQ, 0);
     pwm_init(LUANCH_SERVOR, PWM_FREQ, 0);
+    adc_init(ADC_CHANNEL, ADC_10BIT);
     bldc_init();
 }
 
@@ -68,4 +70,11 @@ void shot_fire_once(void)
     bldc_set_speed(1200);
     push_forward_and_back();
     bldc_set_speed(1000);
+}
+
+void get_voltage_feedback(void)
+{
+    int adc_num = adc_mean_filter_convert(ADC_CHANNEL, 5);
+    voltage_feedback = adc_num  / 642.0f * 2.14f * 11.0f;
+
 }

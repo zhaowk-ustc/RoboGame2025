@@ -13,13 +13,13 @@
 
 /* ===================== 运动控制参数 ===================== */
 #define TARGET_POSITION 6000 // 目标位置（编码器计数）
-#define MOVE_SPEED 6000      // PWM占空比（速度）
+#define MOVE_SPEED 8000      // PWM占空比（速度）
 #define DIRECTION_FORWARD GPIO_HIGH
 #define DIRECTION_BACKWARD GPIO_LOW
 
 /* ===================== 时间参数 ===================== */
 #define LOOP_DELAY_MS 100      // 主循环延迟时间
-#define ENDPOINT_DELAY_MS 1000 // 起点/终点暂停时间
+#define ENDPOINT_DELAY_MS 500 // 起点/终点暂停时间
 
 /* ===================== 类型定义 ===================== */
 

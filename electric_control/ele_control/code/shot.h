@@ -15,6 +15,8 @@
 #define SHOT_BACK_LEFT (ATOM2_CH6_P13_1)
 #define SHOT_BACK_RIGHT (ATOM2_CH5_P13_0)
 
+#define ADC_CHANNEL (ADC1_CH5_A21)
+
 #define ESC_THROTTLE_MIN (1000)  // 最小油门值 (对应1000us脉宽)
 #define ESC_THROTTLE_MAX (2000)  // 最大油门值 (对应2000us脉宽)
 #define ESC_THROTTLE_IDLE (1000) // 怠速油门值
@@ -45,6 +47,7 @@ extern const pwm_channel_enum channel_list[4]; // 改为声明
 /* ===================== 外部变量声明 ===================== */
 // 4个PWM端口的油门值数组（1000-2000）
 extern uint16_t esc_throttle[4]; // 改为声明，去掉初始化
+extern float voltage_feedback;
 
 /* ===================== 函数声明 ===================== */
 void shot_init(void);
@@ -52,5 +55,6 @@ void bldc_init(void);
 void bldc_set_speed(uint16_t throttle);        // 传参1000-2000
 void set_launch_angle(float normalized_input); // 传参-1到1，飞镖装载直接给1
 void shot_fire_once(void);
+void get_voltage_feedback(void);
 
 #endif /* CODE_SHOT_H_ */
