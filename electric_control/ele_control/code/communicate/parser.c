@@ -79,28 +79,43 @@ static int on_tlv_callback(uint8_t t, const uint8_t* v, uint8_t l, void* user)
     switch (t)
     {
         /* ===== A: ARM ===== */
-        case VAR_ARM_HIGH_GRIP_TO_RESET_GRIPPING:
-            // 高位夹取 -> 抓取复位
-            // TODO: 若有 arm_high_grip_to_reset_gripping() 则改为对应调用
-            // 目前采用与“装弹”类似的回退路径（视机构而定）
-            arm_grip_to_shot();
+        case VAR_ARM_SHOT_TO_RESET:
+            // 射击位 -> 初始化
             arm_shot_to_reset();
             break;
 
-        case VAR_ARM_HIGH_PREPARE_TO_HIGH_GRIP:
-            // 高位准备 -> 高位夹取
+        case VAR_ARM_RESET_TO_STORE:
+            // 初始化 -> 存储位
+            // TODO: 补齐具体动作函数，例如 arm_reset_to_store()
+            break;
+
+        case VAR_ARM_RESET_TO_HIGH_PREPARE:
+            // 初始化 -> 高位准备
+            arm_reset_to_prepare();
+            break;
+
+        case VAR_ARM_HIGH_GRIP_TO_SHOT:
+            // 高位夹取 -> 射击位
+            arm_grip_to_shot();
+            break;
+
+        case VAR_ARM_STORE_TO_SHOT:
+            // 存储位 -> 射击位
+            // TODO: 补齐具体动作函数，例如 arm_store_to_shot()
+            break;
+
+        case VAR_ARM_LOW_GRIP_TO_WAIT_SHOT:
+            // 低位夹取 -> 等待射击
+            // TODO: 补齐具体动作函数，例如 arm_grip_to_wait_shot()
+            break;
+
+        case VAR_ARM_LOW_PREPARE_TO_GRIP:
+            // 低位准备 -> 低位夹取
             arm_prepare_to_grip();
             break;
 
-        case VAR_ARM_LOW_GRIP_TO_RESET_GRIPPING:
-            // 低位夹取 -> 抓取复位
-            // TODO: 若有 arm_low_grip_to_reset_gripping() 则改为对应调用
-            arm_grip_to_shot();
-            arm_shot_to_reset();
-            break;
-
-        case VAR_ARM_LOW_PREPARE_TO_LOW_GRIP:
-            // 低位准备 -> 低位夹取
+        case VAR_ARM_HIGH_PREPARE_TO_GRIP:
+            // 高位准备 -> 高位夹取
             arm_prepare_to_grip();
             break;
 
@@ -109,51 +124,34 @@ static int on_tlv_callback(uint8_t t, const uint8_t* v, uint8_t l, void* user)
             arm_relax();
             break;
 
-        case VAR_ARM_RESET:
-            // 夹爪初始化
-            arm_reset();
+        case VAR_ARM_LOW_GRIP_TO_STORE:
+            // 低位夹取 -> 存储位
+            // TODO: 补齐具体动作函数，例如 arm_grip_to_store()
             break;
 
-        case VAR_ARM_RESET_GRIPPING_TO_SHOT:
-            // 抓取复位 -> 射击位
+        case VAR_ARM_HIGH_GRIP_TO_WAIT_SHOT:
+            // 高位夹取 -> 等待射击
+            // TODO: 补齐具体动作函数，例如 arm_grip_to_wait_shot()
+            break;
+
+        case VAR_ARM_WAIT_SHOT_TO_SHOT:
+            // 等待射击 -> 射击位
+            // TODO: 补齐具体动作函数，例如 arm_wait_shot_to_shot()
+            break;
+
+        case VAR_ARM_HIGH_GRIP_TO_STORE:
+            // 高位夹取 -> 存储位
+            // TODO: 补齐具体动作函数，例如 arm_grip_to_store()
+            break;
+
+        case VAR_ARM_LOW_GRIP_TO_SHOT:
+            // 低位夹取 -> 射击位
             arm_grip_to_shot();
-            break;
-
-        case VAR_ARM_RESET_GRIPPING_TO_STORE:
-            // 抓取复位 -> 存储位
-            // TODO: 补齐具体动作函数，例如 arm_reset_gripping_to_store()
-            break;
-
-        case VAR_ARM_RESET_TO_HIGH_PREPARE:
-            // 初始化 -> 高位准备
-            // 目前使用通用“到准备位”动作；若有区分高/低位的接口，可替换
-            arm_reset_to_prepare();
-            break;
-
-        case VAR_ARM_RESET_TO_LOW_PREPARE:
-            // 初始化 -> 低位准备
-            // 目前使用通用“到准备位”动作；若有区分高/低位的接口，可替换
-            arm_reset_to_prepare();
-            break;
-
-        case VAR_ARM_RESET_TO_STORE:
-            // 初始化 -> 存储位
-            // TODO: 补齐具体动作函数，例如 arm_reset_to_store()
-            break;
-
-        case VAR_ARM_SHOT_TO_RESET:
-            // 射击位 -> 初始化
-            arm_shot_to_reset();
             break;
 
         case VAR_ARM_STORE_TO_RESET:
             // 存储位 -> 初始化
             // TODO: 若有 arm_store_to_reset() 则调用
-            break;
-
-        case VAR_ARM_STORE_TO_RESET_GRIPPING:
-            // 存储位 -> 抓取复位
-            // TODO: 若有 arm_store_to_reset_gripping() 则调用
             break;
 
             /* ===== B: BASE ===== */
