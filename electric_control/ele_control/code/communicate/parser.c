@@ -79,6 +79,10 @@ static int on_tlv_callback(uint8_t t, const uint8_t* v, uint8_t l, void* user)
     switch (t)
     {
         /* ===== A: ARM ===== */
+        case VAR_ARM_RESET:
+            // 复位/初始化
+            arm_reset();
+            break;
         case VAR_ARM_SHOT_TO_RESET:
             // 射击位 -> 初始化
             arm_shot_to_reset();
@@ -91,6 +95,11 @@ static int on_tlv_callback(uint8_t t, const uint8_t* v, uint8_t l, void* user)
 
         case VAR_ARM_RESET_TO_HIGH_PREPARE:
             // 初始化 -> 高位准备
+            arm_reset_to_prepare();
+            break;
+
+        case VAR_ARM_RESET_TO_LOW_PREPARE:
+            // 初始化 -> 低位准备
             arm_reset_to_prepare();
             break;
 
