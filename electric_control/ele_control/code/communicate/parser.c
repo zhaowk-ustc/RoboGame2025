@@ -90,7 +90,6 @@ static int on_tlv_callback(uint8_t t, const uint8_t *v, uint8_t l, void *user)
 
     case VAR_ARM_RESET_TO_STORE:
         // 初始化 -> 存储位
-        // TODO: 补齐具体动作函数，例如 arm_reset_to_store()
         arm_reset_to_store();
         break;
 
@@ -111,13 +110,11 @@ static int on_tlv_callback(uint8_t t, const uint8_t *v, uint8_t l, void *user)
 
     case VAR_ARM_STORE_TO_SHOT:
         // 存储位 -> 射击位
-        // TODO: 补齐具体动作函数，例如 arm_store_to_shot()
         arm_store_to_shot();
         break;
 
     case VAR_ARM_LOW_GRIP_TO_WAIT_SHOT:
         // 低位夹取 -> 等待射击
-        // TODO: 补齐具体动作函数，例如 arm_grip_to_wait_shot()
         arm_grip_to_wait_shot();
         break;
 
@@ -138,25 +135,21 @@ static int on_tlv_callback(uint8_t t, const uint8_t *v, uint8_t l, void *user)
 
     case VAR_ARM_LOW_GRIP_TO_STORE:
         // 低位夹取 -> 存储位
-        // TODO: 补齐具体动作函数，例如 arm_grip_to_store()
         arm_grip_to_store();
         break;
 
     case VAR_ARM_HIGH_GRIP_TO_WAIT_SHOT:
         // 高位夹取 -> 等待射击
-        // TODO: 补齐具体动作函数，例如 arm_grip_to_wait_shot()
         arm_grip_to_wait_shot();
         break;
 
     case VAR_ARM_WAIT_SHOT_TO_SHOT:
         // 等待射击 -> 射击位
-        // TODO: 补齐具体动作函数，例如 arm_wait_shot_to_shot()
         arm_wait_shot_to_shot();
         break;
 
     case VAR_ARM_HIGH_GRIP_TO_STORE:
         // 高位夹取 -> 存储位
-        // TODO: 补齐具体动作函数，例如 arm_grip_to_store()
         arm_high_grip_to_store();
         break;
 
@@ -167,7 +160,6 @@ static int on_tlv_callback(uint8_t t, const uint8_t *v, uint8_t l, void *user)
 
     case VAR_ARM_STORE_TO_RESET:
         // 存储位 -> 初始化
-        // TODO: 若有 arm_store_to_reset() 则调用
         arm_store_to_reset();
         break;
 
@@ -178,7 +170,6 @@ static int on_tlv_callback(uint8_t t, const uint8_t *v, uint8_t l, void *user)
         break;
     case VAR_BASE_MOVE_BACKWARD_FAST_EX:
         // 底盘后退（极快速）
-        // TODO: 若有更快的模式，可替换此处
         set_motion(&PATTERN_BACK, FAST_GEAR);
         break;
 
@@ -193,7 +184,6 @@ static int on_tlv_callback(uint8_t t, const uint8_t *v, uint8_t l, void *user)
         break;
     case VAR_BASE_MOVE_FORWARD_FAST_EX:
         // 底盘前进（极快速）
-        // TODO: 若有更快的模式，可替换此处
         set_motion(&PATTERN_FRONT, FAST_GEAR);
         break;
 
@@ -250,8 +240,6 @@ static int on_tlv_callback(uint8_t t, const uint8_t *v, uint8_t l, void *user)
         /* ===== D: DART / FEEDER ===== */
     case VAR_DART_PUSH_ONCE:
         // 送料/管道推弹一次
-        // TODO: 若 guandao_push_once() 可用，则启用
-        // guandao_push_once();
         push_forward_and_back();
         break;
 
@@ -277,15 +265,11 @@ static int on_tlv_callback(uint8_t t, const uint8_t *v, uint8_t l, void *user)
 
     case VAR_FRICTION_WHEEL_START:
         // 摩擦轮启动
-        // TODO: 替换为你项目中的实际接口，如 shot_friction_start()
-        // shot_friction_start();
         bldc_start();
         break;
 
     case VAR_FRICTION_WHEEL_STOP:
         // 摩擦轮停止
-        // TODO: 替换为你项目中的实际接口，如 shot_friction_stop()
-        // shot_friction_stop();
         bldc_stop();
         break;
     case VAR_GET_VOLTAGE:
