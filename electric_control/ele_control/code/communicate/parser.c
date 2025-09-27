@@ -270,7 +270,7 @@ static int on_tlv_callback(uint8_t t, const uint8_t *v, uint8_t l, void *user)
             float value = 0.0f;
             if (data_read_f32le(v, 4, &value) == DATA_OK)
             {
-                bldc_set_speed(value);
+                bldc_set_value(value);
             }
         }
         break;
@@ -279,7 +279,7 @@ static int on_tlv_callback(uint8_t t, const uint8_t *v, uint8_t l, void *user)
         // 摩擦轮启动
         // TODO: 替换为你项目中的实际接口，如 shot_friction_start()
         // shot_friction_start();
-        bldc_set_speed(1200);
+        bldc_start();
         break;
 
     case VAR_FRICTION_WHEEL_STOP:

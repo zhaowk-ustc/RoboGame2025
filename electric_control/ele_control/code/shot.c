@@ -33,12 +33,19 @@ void bldc_init(void)
     system_delay_ms(2000);
 }
 
-void bldc_set_speed(uint16_t throttle)
+void bldc_start()
 {
     for (int i = 0; i < 4; i++)
     {
-        esc_throttle[i] = throttle;
         pwm_set_duty(channel_list[i], ESC_PULSE_TO_DUTY(esc_throttle[i]));
+    }
+}
+
+void bldc_set_value(uint16_t value)
+{
+    for (int i = 0; i < 4; i++)
+    {
+        esc_throttle[i] = value;
     }
 }
 
@@ -75,6 +82,5 @@ void shot_fire_once(void)
 void get_voltage_feedback(void)
 {
     int adc_num = adc_mean_filter_convert(ADC_CHANNEL, 5);
-    voltage_feedback = adc_num  / 642.0f * 2.14f * 11.0f;
-
+    voltage_feedback = adc_num / 642.0f * 2.14f * 11.0f;
 }
