@@ -292,6 +292,8 @@ static int on_tlv_callback(uint8_t t, const uint8_t *v, uint8_t l, void *user)
     {
         // 获取电池电压并回传
         float voltage = 0.0f;
+        get_voltage_feedback();
+        voltage = voltage_feedback;
         add_response_to_buffer(VAR_VOLTAGE, &voltage, 4);
     }
     break;
