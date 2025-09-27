@@ -9,7 +9,7 @@
 
 // 定义变量（在.c文件中）
 const pwm_channel_enum channel_list[4] = {SHOT_FRONT_LEFT, SHOT_FRONT_RIGHT, SHOT_BACK_LEFT, SHOT_BACK_RIGHT};
-uint16_t esc_throttle[4] = {0, 0, 0, 0};
+uint16_t esc_throttle[4] = {1200, 1200, 1200, 1200};
 float voltage_feedback;
 
 void shot_init(void)
@@ -27,8 +27,7 @@ void bldc_init(void)
 {
     for (int i = 0; i < 4; i++)
     {
-        esc_throttle[i] = ESC_THROTTLE_MIN;
-        pwm_set_duty(channel_list[i], ESC_PULSE_TO_DUTY(esc_throttle[i]));
+        pwm_set_duty(channel_list[i], ESC_PULSE_TO_DUTY(1000));
     }
     system_delay_ms(2000);
 }
@@ -46,6 +45,14 @@ void bldc_set_value(uint16_t value)
     for (int i = 0; i < 4; i++)
     {
         esc_throttle[i] = value;
+    }
+}
+
+void bldc_stop()
+{
+    for (int i = 0; i < 4; i++)
+    {
+        pwm_set_duty(channel_list[i], ESC_PULSE_TO_DUTY(1000));
     }
 }
 
@@ -74,9 +81,9 @@ void set_launch_angle(float normalized_input)
 
 void shot_fire_once(void)
 {
-    bldc_set_speed(1200);
+    bldc_start();
     push_forward_and_back();
-    bldc_set_speed(1000);
+    bldc_stop();
 }
 
 void get_voltage_feedback(void)

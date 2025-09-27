@@ -53,8 +53,9 @@ extern float voltage_feedback;
 void shot_init(void);
 void bldc_init(void);
 void bldc_start(void);
+void bldc_stop(void);
 void bldc_set_value(uint16_t value);           // 传参1000-2000
-void set_launch_angle(float normalized_input); // 传参-1到1，飞镖装载直接给1
+void set_launch_angle(float normalized_input); // 传参-1到1，飞镖装载直接给-1
 void shot_fire_once(void);
 void get_voltage_feedback(void);
 

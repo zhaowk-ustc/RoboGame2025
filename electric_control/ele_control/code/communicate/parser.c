@@ -286,7 +286,7 @@ static int on_tlv_callback(uint8_t t, const uint8_t *v, uint8_t l, void *user)
         // 摩擦轮停止
         // TODO: 替换为你项目中的实际接口，如 shot_friction_stop()
         // shot_friction_stop();
-        bldc_set_speed(1000);
+        bldc_stop();
         break;
     case VAR_GET_VOLTAGE:
     {
