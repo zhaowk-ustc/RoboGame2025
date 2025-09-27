@@ -288,6 +288,13 @@ static int on_tlv_callback(uint8_t t, const uint8_t *v, uint8_t l, void *user)
         // shot_friction_stop();
         bldc_set_speed(1000);
         break;
+    case VAR_GET_VOLTAGE:
+    {
+        // 获取电池电压并回传
+        float voltage = 0.0f;
+        add_response_to_buffer(VAR_VOLTAGE, &voltage, 4);
+    }
+    break;
 
         /* ===== G: GET/IMU ===== */
     case VAR_GET_IMU_YAW:
