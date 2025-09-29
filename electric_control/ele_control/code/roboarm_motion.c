@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include "zf_common_headfile.h"
 
-// µ±Ç°Î»ÖÃÈ«¾Ö±äÁ¿
+// å½“å‰ä½ç½®å…¨å±€å˜é‡
 static ServoPositions current_pos = {
     .di = 0,
     .dabi = 0,
@@ -65,7 +65,7 @@ static const ServoPositions PREPARE_POS_4 = {
     .zhongbi = 660,
     .xiaobi = 1040,
     .shouwan = 680,
-    .gripper = GRIPPER_OPEN}; // ´ó±ÛÖĞ±Û²ÎÊı½ÏÖ®Ç°-30£¬Ó¦¶Ô×¥×¦¶æ»ú¸Ä³¯ÉÏ·ÅÖÃ
+    .gripper = GRIPPER_OPEN}; //å¤§è‡‚ä¸­è‡‚å‚æ•°è¾ƒä¹‹å‰-30ï¼Œåº”å¯¹æŠ“çˆªèˆµæœºæ”¹æœä¸Šæ”¾ç½®
 
 static const ServoPositions GRASP_POS = {
     .di = 970,
@@ -78,8 +78,8 @@ static const ServoPositions GRASP_POS = {
 static const ServoPositions HIGH_PREPARE_POS = {
     .di = 970,
     .dabi = 550,
-    .zhongbi = 530,
-    .xiaobi = 830,
+    .zhongbi = 550,
+    .xiaobi = 850,
     .shouwan = 680,
     .gripper = GRIPPER_OPEN};
 
@@ -89,7 +89,8 @@ static const ServoPositions HIGH_GRASP_POS = {
     .zhongbi = 900,
     .xiaobi = 700,
     .shouwan = 680,
-    .gripper = GRIPPER_CLOSE};
+    .gripper = GRIPPER_CLOSE
+};
 
 static const ServoPositions HIGH_GRASP_POS_2 = {
     .di = 970,
@@ -97,7 +98,8 @@ static const ServoPositions HIGH_GRASP_POS_2 = {
     .zhongbi = 980,
     .xiaobi = 700,
     .shouwan = 680,
-    .gripper = GRIPPER_CLOSE};
+    .gripper = GRIPPER_CLOSE
+};
 
 static const ServoPositions STORE_POS = {
     .di = 630,
@@ -128,7 +130,7 @@ static void arm_set_pwm(ServoPositions pos)
 
 static void move_pose_smoothly(ServoPositions target_pos, int16_t time_ms)
 {
-    // ¼ÆËãÃ¿¸ö¶æ»úµÄÒÆ¶¯¾àÀë
+    // è®¡ç®—æ¯ä¸ªèˆµæœºçš„ç§»åŠ¨è·ç¦»
     int diff_di = target_pos.di - current_pos.di;
     int diff_dabi = target_pos.dabi - current_pos.dabi;
     int diff_zhongbi = target_pos.zhongbi - current_pos.zhongbi;
@@ -136,55 +138,55 @@ static void move_pose_smoothly(ServoPositions target_pos, int16_t time_ms)
     int diff_shouwan = target_pos.shouwan - current_pos.shouwan;
     int diff_gripper = target_pos.gripper - current_pos.gripper;
 
-    // ¼ÆËã²½Êı£¨»ùÓÚÊ±¼äºÍÑÓ³Ù£©
+    // è®¡ç®—æ­¥æ•°ï¼ˆåŸºäºæ—¶é—´å’Œå»¶è¿Ÿï¼‰
     int total_steps = time_ms / SMOOTH_DELAY_MS;
     if (total_steps <= 0)
         total_steps = 1;
 
-    // ×¦×Ó¶ÀÁ¢²½Êı¼ÆËã£¨300msÄÚÍê³É£©
+    // çˆªå­ç‹¬ç«‹æ­¥æ•°è®¡ç®—ï¼ˆ300mså†…å®Œæˆï¼‰
     int gripper_steps = GRIPPER_MOVE_TIME_MS / SMOOTH_DELAY_MS;
     if (gripper_steps <= 0)
         gripper_steps = 1;
     if (gripper_steps > total_steps)
         gripper_steps = total_steps;
 
-    // ¼ÆËãÃ¿²½µÄÒÆ¶¯Á¿£¨ÆäËû¹Ø½Ú£©
+    // è®¡ç®—æ¯æ­¥çš„ç§»åŠ¨é‡ï¼ˆå…¶ä»–å…³èŠ‚ï¼‰
     float step_di = (float)diff_di / total_steps;
     float step_dabi = (float)diff_dabi / total_steps;
     float step_zhongbi = (float)diff_zhongbi / total_steps;
     float step_xiaobi = (float)diff_xiaobi / total_steps;
     float step_shouwan = (float)diff_shouwan / total_steps;
 
-    // ¼ÆËã×¦×ÓÃ¿²½ÒÆ¶¯Á¿£¨¶ÀÁ¢ËÙ¶È£©
+    // è®¡ç®—çˆªå­æ¯æ­¥ç§»åŠ¨é‡ï¼ˆç‹¬ç«‹é€Ÿåº¦ï¼‰
     float step_gripper = (float)diff_gripper / gripper_steps;
 
-    // ¼ÇÂ¼ÆğÊ¼Î»ÖÃ
+    // è®°å½•èµ·å§‹ä½ç½®
     ServoPositions start_pos = current_pos;
 
-    // Öğ²½ÒÆ¶¯µ½Ä¿±êÎ»ÖÃ
+    // é€æ­¥ç§»åŠ¨åˆ°ç›®æ ‡ä½ç½®
     for (int step = 1; step <= total_steps; step++)
     {
-        // ¼ÆËãµ±Ç°²½µÄÄ¿±êÎ»ÖÃ£¨ÆäËû¹Ø½Ú£©
+        // è®¡ç®—å½“å‰æ­¥çš„ç›®æ ‡ä½ç½®ï¼ˆå…¶ä»–å…³èŠ‚ï¼‰
         int target_di = start_pos.di + (int)(step_di * step);
         int target_dabi = start_pos.dabi + (int)(step_dabi * step);
         int target_zhongbi = start_pos.zhongbi + (int)(step_zhongbi * step);
         int target_xiaobi = start_pos.xiaobi + (int)(step_xiaobi * step);
         int target_shouwan = start_pos.shouwan + (int)(step_shouwan * step);
 
-        // ¼ÆËã×¦×ÓÎ»ÖÃ£¨¶ÀÁ¢Ê±¼ä¿ØÖÆ£©
+        // è®¡ç®—çˆªå­ä½ç½®ï¼ˆç‹¬ç«‹æ—¶é—´æ§åˆ¶ï¼‰
         int target_gripper;
         if (step <= gripper_steps)
         {
-            // ×¦×ÓÔÚÇ°gripper_steps²½ÄÚÍê³ÉÒÆ¶¯
+            // çˆªå­åœ¨å‰gripper_stepsæ­¥å†…å®Œæˆç§»åŠ¨
             target_gripper = start_pos.gripper + (int)(step_gripper * step);
         }
         else
         {
-            // ×¦×ÓÒÑ¾­µ½´ïÄ¿±ê£¬±£³ÖÎ»ÖÃ
+            // çˆªå­å·²ç»åˆ°è¾¾ç›®æ ‡ï¼Œä¿æŒä½ç½®
             target_gripper = target_pos.gripper;
         }
 
-        // ÔÚ×îºóÒ»²½£¬È·±£ËùÓĞ¹Ø½Úµ½´ï¾«È·µÄÄ¿±êÎ»ÖÃ
+        // åœ¨æœ€åä¸€æ­¥ï¼Œç¡®ä¿æ‰€æœ‰å…³èŠ‚åˆ°è¾¾ç²¾ç¡®çš„ç›®æ ‡ä½ç½®
         if (step == total_steps)
         {
             target_di = target_pos.di;
@@ -195,7 +197,7 @@ static void move_pose_smoothly(ServoPositions target_pos, int16_t time_ms)
             target_gripper = target_pos.gripper;
         }
 
-        // ¸üĞÂµ±Ç°Î»ÖÃ²¢ÉèÖÃPWM
+        // æ›´æ–°å½“å‰ä½ç½®å¹¶è®¾ç½®PWM
         current_pos.di = target_di;
         current_pos.dabi = target_dabi;
         current_pos.zhongbi = target_zhongbi;
@@ -205,7 +207,7 @@ static void move_pose_smoothly(ServoPositions target_pos, int16_t time_ms)
 
         arm_set_pwm(current_pos);
 
-        // ÑÓ³Ù
+        // å»¶è¿Ÿ
         system_delay_ms(SMOOTH_DELAY_MS);
     }
 }
@@ -240,7 +242,7 @@ void arm_reset(void)
     }
     else
     {
-        // current_pos = RESET_POS;
+        //current_pos = RESET_POS;
         move_pose_smoothly(RESET_POS_2, 500);
     }
 }
@@ -261,14 +263,14 @@ void arm_reset_to_prepare(void)
 {
     printf("=== Starting reset to prepare ===\r\n");
 
-    // 1) µ××ùĞı×ªµ½×¼±¸Î»ÖÃ
+    // 1) åº•åº§æ—‹è½¬åˆ°å‡†å¤‡ä½ç½®
     ServoPositions p = current_pos;
     p.xiaobi = PREPARE_POS.xiaobi;
     printf("Step 1: Moving base to prepare position\r\n");
     move_pose_smoothly(p, 500);
     delay_step();
 
-    // 2) ÆäËû±ÛÍ¬²½Æ½»¬Ğı×ªµ½×¼±¸Î»ÖÃ
+    // 2) å…¶ä»–è‡‚åŒæ­¥å¹³æ»‘æ—‹è½¬åˆ°å‡†å¤‡ä½ç½®
     p = PREPARE_POS;
     printf("Step 2: Moving all arms to prepare position\r\n");
     move_pose_smoothly(p, 1000);
@@ -277,38 +279,38 @@ void arm_reset_to_prepare(void)
     printf("=== Reset to prepare complete ===\r\n");
 }
 
-void arm_reset_to_high_prepare(void)
-{
+void arm_reset_to_high_prepare(void){
     printf("=== Starting reset to prepare ===\r\n");
 
-    // 1) µ××ùĞı×ªµ½×¼±¸Î»ÖÃ
+    // 1) åº•åº§æ—‹è½¬åˆ°å‡†å¤‡ä½ç½®
     ServoPositions p = current_pos;
     p.di = HIGH_PREPARE_POS.di;
     printf("Step 1: Moving base to prepare position\r\n");
     move_pose_smoothly(p, 500);
     delay_step();
 
-    // 2) ÆäËû±ÛÍ¬²½Æ½»¬Ğı×ªµ½×¼±¸Î»ÖÃ
+    // 2) å…¶ä»–è‡‚åŒæ­¥å¹³æ»‘æ—‹è½¬åˆ°å‡†å¤‡ä½ç½®
     p = HIGH_PREPARE_POS;
     printf("Step 2: Moving all arms to prepare position\r\n");
     move_pose_smoothly(p, 1000);
     delay_step();
 
     printf("=== Reset to prepare complete ===\r\n");
+
 }
 
 void arm_prepare_to_grip(void)
 {
     printf("=== Starting prepare to grip ===\r\n");
 
-    // 1) Í¬²½½«´ó±Û/ÖĞ±ÛÒÆ¶¯µ½×¥È¡Î»£¨ÆäËû¹Ø½Ú±£³Ö²»±ä£©
+    // 1) åŒæ­¥å°†å¤§è‡‚/ä¸­è‡‚ç§»åŠ¨åˆ°æŠ“å–ä½ï¼ˆå…¶ä»–å…³èŠ‚ä¿æŒä¸å˜ï¼‰
     ServoPositions p = current_pos;
     p = PREPARE_POS_4;
     printf("Step 1: Moving arm to grip position\r\n");
     move_pose_smoothly(p, 800);
     delay_step();
 
-    // 2) ¼Ğ×¦±ÕºÏĞÎ³É×¥È¡
+    // 2) å¤¹çˆªé—­åˆå½¢æˆæŠ“å–
     printf("Step 2: Closing gripper\r\n");
     p = current_pos;
     p.gripper = GRIPPER_CLOSE;
@@ -318,11 +320,10 @@ void arm_prepare_to_grip(void)
     printf("=== Prepare to grip complete ===\r\n");
 }
 
-void arm_high_prepare_to_grip(void)
-{
+void arm_high_prepare_to_grip(void){
     printf("=== Starting prepare to grip ===\r\n");
 
-    // 1) Í¬²½½«´ó±Û/ÖĞ±ÛÒÆ¶¯µ½×¥È¡Î»£¨ÆäËû¹Ø½Ú±£³Ö²»±ä£©
+    // 1) åŒæ­¥å°†å¤§è‡‚/ä¸­è‡‚ç§»åŠ¨åˆ°æŠ“å–ä½ï¼ˆå…¶ä»–å…³èŠ‚ä¿æŒä¸å˜ï¼‰
     ServoPositions p = current_pos;
     p.dabi = HIGH_GRASP_POS.dabi;
     p.zhongbi = HIGH_GRASP_POS.zhongbi;
@@ -331,7 +332,7 @@ void arm_high_prepare_to_grip(void)
     move_pose_smoothly(p, 800);
     delay_step();
 
-    // 2) ¼Ğ×¦±ÕºÏĞÎ³É×¥È¡
+    // 2) å¤¹çˆªé—­åˆå½¢æˆæŠ“å–
     printf("Step 2: Closing gripper\r\n");
     p = current_pos;
     p.gripper = GRIPPER_CLOSE;
@@ -347,7 +348,7 @@ void arm_grip_to_shot(void)
 
     ServoPositions p;
 
-    // 1) ´ó±Ûµ½Í¶ÖÀÎ»£¬×¼±¸Í¶ÖÀ
+    // 1) å¤§è‡‚åˆ°æŠ•æ·ä½ï¼Œå‡†å¤‡æŠ•æ·
     p = current_pos;
     p.dabi = SHOT_POS.dabi;
     p.zhongbi = PROCESS2_ZHONGBI;
@@ -355,7 +356,7 @@ void arm_grip_to_shot(void)
     move_pose_smoothly(p, 600);
     delay_step();
 
-    // 3) ÖĞ±Ûµ½¹ı³ÌÎ»£¬µ××ùµ½Í¶ÖÀÎ»
+    // 3) ä¸­è‡‚åˆ°è¿‡ç¨‹ä½ï¼Œåº•åº§åˆ°æŠ•æ·ä½
     p = current_pos;
     p.zhongbi = PROCESS_ZHONGBI;
     p.di = SHOT_POS.di;
@@ -364,14 +365,14 @@ void arm_grip_to_shot(void)
     move_pose_smoothly(p, 700);
     delay_step();
 
-    // 4) ÖĞ±Ûµ½Í¶ÖÀÎ»£¬×¼±¸·Å·ÉïÚ
+    // 4) ä¸­è‡‚åˆ°æŠ•æ·ä½ï¼Œå‡†å¤‡æ”¾é£é•–
     p = current_pos;
     p.zhongbi = SHOT_POS.zhongbi;
     printf("Step 6: Moving to shot zhongbi position for dart placement\r\n");
     move_pose_smoothly(p, 1000);
     delay_step();
 
-    // 5) ´ò¿ª¼Ğ×¦£¬·Å·ÉïÚ
+    // 5) æ‰“å¼€å¤¹çˆªï¼Œæ”¾é£é•–
     p = current_pos;
     p.gripper = GRIPPER_OPEN;
     p.zhongbi = PROCESS_ZHONGBI;
@@ -379,7 +380,7 @@ void arm_grip_to_shot(void)
     move_pose_smoothly(p, 500);
     delay_step();
 
-    // // 6) »Øµ½µÈ´ıÎ»ÖÃ£¨¿ÉÑ¡£©
+    // // 6) å›åˆ°ç­‰å¾…ä½ç½®ï¼ˆå¯é€‰ï¼‰
     // p = current_pos;
     // p.zhongbi = PROCESS_ZHONGBI;
     // printf("Step 8: Moving to wait position\r\n");
@@ -395,22 +396,22 @@ void arm_grip_to_store(void)
 
     ServoPositions p;
 
-    // 1) ´ó±ÛÍ¶ÖÀÎ»£¬×¼±¸Í¶ÖÀ
+    // 1) å¤§è‡‚æŠ•æ·ä½ï¼Œå‡†å¤‡æŠ•æ·
     p = current_pos;
     p.dabi = STORE_POS.dabi;
     p.zhongbi = PROCESS2_ZHONGBI;
     printf("Step 1: Moving to shot dabi position\r\n");
     move_pose_smoothly(p, 700);
     delay_step();
-    //
-    //    // 2) Ğ¡±Ûµ½Í¶ÖÀÎ»
-    //    p = current_pos;
-    //    p.xiaobi = STORE_POS.xiaobi;
-    //    printf("Step 3: Moving to shot xiaobi position\r\n");
-    //    move_pose_smoothly(p, 500);
-    //    delay_step();
+//
+//    // 2) å°è‡‚åˆ°æŠ•æ·ä½
+//    p = current_pos;
+//    p.xiaobi = STORE_POS.xiaobi;
+//    printf("Step 3: Moving to shot xiaobi position\r\n");
+//    move_pose_smoothly(p, 500);
+//    delay_step();
 
-    // 3) ÖĞ±Ûµ½¹ı³ÌÎ»£¬µ××ùµ½Í¶ÖÀÎ»
+    // 3) ä¸­è‡‚åˆ°è¿‡ç¨‹ä½ï¼Œåº•åº§åˆ°æŠ•æ·ä½
     p = current_pos;
     p.zhongbi = PROCESS_ZHONGBI;
     p.di = STORE_POS.di;
@@ -419,14 +420,14 @@ void arm_grip_to_store(void)
     move_pose_smoothly(p, 800);
     delay_step();
 
-    // 4) ÖĞ±Ûµ½Í¶ÖÀÎ»£¬×¼±¸·Å·ÉïÚ
+    // 4) ä¸­è‡‚åˆ°æŠ•æ·ä½ï¼Œå‡†å¤‡æ”¾é£é•–
     p = current_pos;
     p.zhongbi = STORE_POS.zhongbi;
     printf("Step 6: Moving to shot zhongbi position for dart placement\r\n");
     move_pose_smoothly(p, 1000);
     delay_step();
 
-    // 5) ´ò¿ª¼Ğ×¦£¬·Å·ÉïÚ
+    // 5) æ‰“å¼€å¤¹çˆªï¼Œæ”¾é£é•–
     p = current_pos;
     p.gripper = GRIPPER_OPEN;
     p.zhongbi = PROCESS_ZHONGBI;
@@ -437,20 +438,19 @@ void arm_grip_to_store(void)
     printf("=== Grip to shot complete ===\r\n");
 }
 
-void arm_grip_to_wait_shot(void)
-{
+void arm_grip_to_wait_shot(void){
     printf("=== Starting grip to shot ===\r\n");
 
     ServoPositions p;
 
-    // 1) ´ó±ÛÍ¶ÖÀÎ»£¬×¼±¸Í¶ÖÀ
+   // 1) å¤§è‡‚æŠ•æ·ä½ï¼Œå‡†å¤‡æŠ•æ·
     p = current_pos;
     p.xiaobi = PROCESS_XIAOBI;
     printf("Step 1: Moving to shot dabi position\r\n");
     move_pose_smoothly(p, 600);
     delay_step();
 
-    // 3) ÖĞ±Ûµ½¹ı³ÌÎ»£¬µ××ùµ½Í¶ÖÀÎ»
+   // 3) ä¸­è‡‚åˆ°è¿‡ç¨‹ä½ï¼Œåº•åº§åˆ°æŠ•æ·ä½
     p = current_pos;
     p.dabi = SHOT_POS.dabi;
     p.zhongbi = PROCESS3_ZHONGBI;
@@ -466,17 +466,18 @@ void arm_grip_to_wait_shot(void)
     move_pose_smoothly(p, 600);
     delay_step();
 
+
+
     printf("=== Grip to shot complete ===\r\n");
 }
 
-void arm_wait_shot_to_shot(void)
-{
+void arm_wait_shot_to_shot(void){
     printf("=== Starting grip to shot ===\r\n");
 
     ServoPositions p;
-    // 5) ´ò¿ª¼Ğ×¦£¬·Å·ÉïÚ
+    // 5) æ‰“å¼€å¤¹çˆªï¼Œæ”¾é£é•–
 
-    // 4) ÖĞ±Ûµ½Í¶ÖÀÎ»£¬×¼±¸·Å·ÉïÚ
+    // 4) ä¸­è‡‚åˆ°æŠ•æ·ä½ï¼Œå‡†å¤‡æ”¾é£é•–
     p = current_pos;
     p.zhongbi = SHOT_POS.zhongbi;
     printf("Step 6: Moving to shot zhongbi position for dart placement\r\n");
@@ -489,22 +490,23 @@ void arm_wait_shot_to_shot(void)
     printf("Step 7: Opening gripper\r\n");
     move_pose_smoothly(p, 500);
     delay_step();
+
+
 }
 
-void arm_high_grip_to_shot(void)
-{
+void arm_high_grip_to_shot(void){
     printf("=== Starting grip to shot ===\r\n");
 
     ServoPositions p;
 
-    // 1) ´ó±ÛÍ¶ÖÀÎ»£¬×¼±¸Í¶ÖÀ
+    // 1) å¤§è‡‚æŠ•æ·ä½ï¼Œå‡†å¤‡æŠ•æ·
     p = current_pos;
     p.xiaobi = PROCESS_XIAOBI;
     printf("Step 1: Moving to shot dabi position\r\n");
     move_pose_smoothly(p, 800);
     delay_step();
 
-    // 3) ÖĞ±Ûµ½¹ı³ÌÎ»£¬µ××ùµ½Í¶ÖÀÎ»
+    // 3) ä¸­è‡‚åˆ°è¿‡ç¨‹ä½ï¼Œåº•åº§åˆ°æŠ•æ·ä½
     p = current_pos;
     p.dabi = SHOT_POS.dabi;
     p.zhongbi = PROCESS3_ZHONGBI;
@@ -520,14 +522,14 @@ void arm_high_grip_to_shot(void)
     move_pose_smoothly(p, 800);
     delay_step();
 
-    // 4) ÖĞ±Ûµ½Í¶ÖÀÎ»£¬×¼±¸·Å·ÉïÚ
+    // 4) ä¸­è‡‚åˆ°æŠ•æ·ä½ï¼Œå‡†å¤‡æ”¾é£é•–
     p = current_pos;
     p.zhongbi = SHOT_POS.zhongbi;
     printf("Step 6: Moving to shot zhongbi position for dart placement\r\n");
     move_pose_smoothly(p, 1000);
     delay_step();
 
-    // 5) ´ò¿ª¼Ğ×¦£¬·Å·ÉïÚ
+    // 5) æ‰“å¼€å¤¹çˆªï¼Œæ”¾é£é•–
     p = current_pos;
     p.gripper = GRIPPER_OPEN;
     p.zhongbi = PROCESS_ZHONGBI;
@@ -544,7 +546,7 @@ void arm_shot_to_reset(void)
 
     ServoPositions p;
 
-    // 1) »Øµ½¸´Î»Î»ÖÃ£¬×¼±¸ÏÂÒ»´Î×¥È¡
+    // 1) å›åˆ°å¤ä½ä½ç½®ï¼Œå‡†å¤‡ä¸‹ä¸€æ¬¡æŠ“å–
     p = RESET_POS;
     printf("Step 1: Moving to grip di position\r\n");
     move_pose_smoothly(p, 600);
@@ -560,20 +562,20 @@ void arm_shot_to_reset(void)
 
 void arm_store_to_reset(void)
 {
-    printf("=== Starting shot to reset ===\r\n");
+   printf("=== Starting shot to reset ===\r\n");
 
-    ServoPositions p;
+   ServoPositions p;
 
-    p = RESET_POS_2;
-    printf("Step 1: Moving to grip di position\r\n");
-    move_pose_smoothly(p, 400);
-    delay_step();
+   p = RESET_POS_2;
+   printf("Step 1: Moving to grip di position\r\n");
+   move_pose_smoothly(p, 400);
+   delay_step();
 
-    printf("=== Shot to grip prepare complete ===\r\n");
+   printf("=== Shot to grip prepare complete ===\r\n");
+
 }
 
-void arm_reset_to_store(void)
-{
+void arm_reset_to_store(void){
     printf("=== Starting shot to reset ===\r\n");
 
     ServoPositions p;
@@ -597,6 +599,7 @@ void arm_reset_to_store(void)
     move_pose_smoothly(p, 600);
     delay_step();
     printf("=== Shot to grip prepare complete ===\r\n");
+
 }
 
 void arm_store_to_shot(void)
@@ -634,20 +637,19 @@ void arm_store_to_shot(void)
     printf("=== Grip to shot complete ===\r\n");
 }
 
-void arm_high_grip_to_store(void)
-{
+void arm_high_grip_to_store(void){
     printf("=== Starting grip to shot ===\r\n");
 
     ServoPositions p;
 
-    // 1) ´ó±ÛÍ¶ÖÀÎ»£¬×¼±¸Í¶ÖÀ
+    // 1) å¤§è‡‚æŠ•æ·ä½ï¼Œå‡†å¤‡æŠ•æ·
     p = current_pos;
     p.xiaobi = PROCESS_XIAOBI;
     printf("Step 1: Moving to shot dabi position\r\n");
     move_pose_smoothly(p, 800);
     delay_step();
 
-    // 3) ÖĞ±Ûµ½¹ı³ÌÎ»£¬µ××ùµ½Í¶ÖÀÎ»
+    // 3) ä¸­è‡‚åˆ°è¿‡ç¨‹ä½ï¼Œåº•åº§åˆ°æŠ•æ·ä½
     p = current_pos;
     p.dabi = STORE_POS.dabi;
     p.zhongbi = PROCESS3_ZHONGBI;
@@ -663,14 +665,14 @@ void arm_high_grip_to_store(void)
     move_pose_smoothly(p, 800);
     delay_step();
 
-    // 4) ÖĞ±Ûµ½Í¶ÖÀÎ»£¬×¼±¸·Å·ÉïÚ
+    // 4) ä¸­è‡‚åˆ°æŠ•æ·ä½ï¼Œå‡†å¤‡æ”¾é£é•–
     p = current_pos;
     p.zhongbi = STORE_POS.zhongbi;
     printf("Step 6: Moving to shot zhongbi position for dart placement\r\n");
     move_pose_smoothly(p, 1000);
     delay_step();
 
-    // 5) ´ò¿ª¼Ğ×¦£¬·Å·ÉïÚ
+    // 5) æ‰“å¼€å¤¹çˆªï¼Œæ”¾é£é•–
     p = current_pos;
     p.gripper = GRIPPER_OPEN;
     p.zhongbi = PROCESS_ZHONGBI;

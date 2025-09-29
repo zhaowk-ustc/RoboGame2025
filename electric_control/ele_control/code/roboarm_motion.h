@@ -20,8 +20,8 @@
 
 #define PROCESS_ZHONGBI 1000
 #define PROCESS_XIAOBI 1100
-#define PROCESS2_ZHONGBI 700 // 因为机械限位
-#define PROCESS3_ZHONGBI 800 // 也是机械限位
+#define PROCESS2_ZHONGBI 700  //因为机械限位
+#define PROCESS3_ZHONGBI 800  //也是机械限位
 
 // 运动控制参数
 #define SMOOTH_DELAY_MS 20
@@ -55,7 +55,9 @@ void arm_reset_to_store(void);
 void arm_store_to_reset(void);
 void arm_store_to_shot(void);
 
+
 void arm_high_grip_to_shot(void);
 void arm_high_grip_to_store(void);
+
 
 #endif // ROBOARM_MOTION_H
