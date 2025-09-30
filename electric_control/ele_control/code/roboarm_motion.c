@@ -65,7 +65,7 @@ static const ServoPositions PREPARE_POS_4 = {
     .zhongbi = 660,
     .xiaobi = 1040,
     .shouwan = 680,
-    .gripper = GRIPPER_OPEN}; //大臂中臂参数较之前-30，应对抓爪舵机改朝上放置
+    .gripper = GRIPPER_OPEN}; // 大臂中臂参数较之前-30，应对抓爪舵机改朝上放置
 
 static const ServoPositions GRASP_POS = {
     .di = 970,
@@ -87,10 +87,9 @@ static const ServoPositions HIGH_GRASP_POS = {
     .di = 970,
     .dabi = 700,
     .zhongbi = 900,
-    .xiaobi = 700,
+    .xiaobi = 740,
     .shouwan = 680,
-    .gripper = GRIPPER_CLOSE
-};
+    .gripper = GRIPPER_CLOSE};
 
 static const ServoPositions HIGH_GRASP_POS_2 = {
     .di = 970,
@@ -98,8 +97,7 @@ static const ServoPositions HIGH_GRASP_POS_2 = {
     .zhongbi = 980,
     .xiaobi = 700,
     .shouwan = 680,
-    .gripper = GRIPPER_CLOSE
-};
+    .gripper = GRIPPER_CLOSE};
 
 static const ServoPositions STORE_POS = {
     .di = 630,
@@ -242,7 +240,7 @@ void arm_reset(void)
     }
     else
     {
-        //current_pos = RESET_POS;
+        // current_pos = RESET_POS;
         move_pose_smoothly(RESET_POS_2, 500);
     }
 }
@@ -279,7 +277,8 @@ void arm_reset_to_prepare(void)
     printf("=== Reset to prepare complete ===\r\n");
 }
 
-void arm_reset_to_high_prepare(void){
+void arm_reset_to_high_prepare(void)
+{
     printf("=== Starting reset to prepare ===\r\n");
 
     // 1) 底座旋转到准备位置
@@ -296,7 +295,6 @@ void arm_reset_to_high_prepare(void){
     delay_step();
 
     printf("=== Reset to prepare complete ===\r\n");
-
 }
 
 void arm_prepare_to_grip(void)
@@ -320,7 +318,8 @@ void arm_prepare_to_grip(void)
     printf("=== Prepare to grip complete ===\r\n");
 }
 
-void arm_high_prepare_to_grip(void){
+void arm_high_prepare_to_grip(void)
+{
     printf("=== Starting prepare to grip ===\r\n");
 
     // 1) 同步将大臂/中臂移动到抓取位（其他关节保持不变）
@@ -403,13 +402,13 @@ void arm_grip_to_store(void)
     printf("Step 1: Moving to shot dabi position\r\n");
     move_pose_smoothly(p, 700);
     delay_step();
-//
-//    // 2) 小臂到投掷位
-//    p = current_pos;
-//    p.xiaobi = STORE_POS.xiaobi;
-//    printf("Step 3: Moving to shot xiaobi position\r\n");
-//    move_pose_smoothly(p, 500);
-//    delay_step();
+    //
+    //    // 2) 小臂到投掷位
+    //    p = current_pos;
+    //    p.xiaobi = STORE_POS.xiaobi;
+    //    printf("Step 3: Moving to shot xiaobi position\r\n");
+    //    move_pose_smoothly(p, 500);
+    //    delay_step();
 
     // 3) 中臂到过程位，底座到投掷位
     p = current_pos;
@@ -438,19 +437,20 @@ void arm_grip_to_store(void)
     printf("=== Grip to shot complete ===\r\n");
 }
 
-void arm_grip_to_wait_shot(void){
+void arm_grip_to_wait_shot(void)
+{
     printf("=== Starting grip to shot ===\r\n");
 
     ServoPositions p;
 
-   // 1) 大臂投掷位，准备投掷
+    // 1) 大臂投掷位，准备投掷
     p = current_pos;
     p.xiaobi = PROCESS_XIAOBI;
     printf("Step 1: Moving to shot dabi position\r\n");
     move_pose_smoothly(p, 600);
     delay_step();
 
-   // 3) 中臂到过程位，底座到投掷位
+    // 3) 中臂到过程位，底座到投掷位
     p = current_pos;
     p.dabi = SHOT_POS.dabi;
     p.zhongbi = PROCESS3_ZHONGBI;
@@ -466,12 +466,11 @@ void arm_grip_to_wait_shot(void){
     move_pose_smoothly(p, 600);
     delay_step();
 
-
-
     printf("=== Grip to shot complete ===\r\n");
 }
 
-void arm_wait_shot_to_shot(void){
+void arm_wait_shot_to_shot(void)
+{
     printf("=== Starting grip to shot ===\r\n");
 
     ServoPositions p;
@@ -490,11 +489,10 @@ void arm_wait_shot_to_shot(void){
     printf("Step 7: Opening gripper\r\n");
     move_pose_smoothly(p, 500);
     delay_step();
-
-
 }
 
-void arm_high_grip_to_shot(void){
+void arm_high_grip_to_shot(void)
+{
     printf("=== Starting grip to shot ===\r\n");
 
     ServoPositions p;
@@ -562,20 +560,20 @@ void arm_shot_to_reset(void)
 
 void arm_store_to_reset(void)
 {
-   printf("=== Starting shot to reset ===\r\n");
+    printf("=== Starting shot to reset ===\r\n");
 
-   ServoPositions p;
+    ServoPositions p;
 
-   p = RESET_POS_2;
-   printf("Step 1: Moving to grip di position\r\n");
-   move_pose_smoothly(p, 400);
-   delay_step();
+    p = RESET_POS_2;
+    printf("Step 1: Moving to grip di position\r\n");
+    move_pose_smoothly(p, 400);
+    delay_step();
 
-   printf("=== Shot to grip prepare complete ===\r\n");
-
+    printf("=== Shot to grip prepare complete ===\r\n");
 }
 
-void arm_reset_to_store(void){
+void arm_reset_to_store(void)
+{
     printf("=== Starting shot to reset ===\r\n");
 
     ServoPositions p;
@@ -599,7 +597,6 @@ void arm_reset_to_store(void){
     move_pose_smoothly(p, 600);
     delay_step();
     printf("=== Shot to grip prepare complete ===\r\n");
-
 }
 
 void arm_store_to_shot(void)
@@ -637,7 +634,8 @@ void arm_store_to_shot(void)
     printf("=== Grip to shot complete ===\r\n");
 }
 
-void arm_high_grip_to_store(void){
+void arm_high_grip_to_store(void)
+{
     printf("=== Starting grip to shot ===\r\n");
 
     ServoPositions p;
