@@ -25,7 +25,7 @@
 
 // 运动控制参数
 #define SMOOTH_DELAY_MS 20
-#define STEP_DELAY_MS 600
+#define STEP_DELAY_MS 400
 
 // 舵机引脚定义
 typedef struct

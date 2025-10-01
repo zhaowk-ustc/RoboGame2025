@@ -86,8 +86,8 @@ static const ServoPositions HIGH_PREPARE_POS = {
 static const ServoPositions HIGH_GRASP_POS = {
     .di = 970,
     .dabi = 700,
-    .zhongbi = 1060,
-    .xiaobi = 740,
+    .zhongbi = 1020,
+    .xiaobi = 770,
     .shouwan = 680,
     .gripper = GRIPPER_CLOSE};
 
@@ -100,17 +100,17 @@ static const ServoPositions HIGH_GRASP_POS_2 = {
     .gripper = GRIPPER_CLOSE};
 
 static const ServoPositions STORE_POS = {
-    .di = 630,
-    .dabi = 540,
-    .zhongbi = 900,
-    .xiaobi = 370,
+    .di = 620,
+    .dabi = 580,
+    .zhongbi = 950,
+    .xiaobi = 390,
     .shouwan = 680,
     .gripper = GRIPPER_CLOSE};
 
 static const ServoPositions SHOT_POS = {
     .di = 510,
-    .dabi = 540,
-    .zhongbi = 900,
+    .dabi = 570,
+    .zhongbi = 960,
     .xiaobi = 370,
     .shouwan = 680,
     .gripper = GRIPPER_CLOSE};
@@ -463,7 +463,7 @@ void arm_grip_to_wait_shot(void)
     p.zhongbi = PROCESS_ZHONGBI;
     p.di = SHOT_POS.di;
     printf("Step 4: Moving to process zhongbi position\r\n");
-    move_pose_smoothly(p, 600);
+    move_pose_smoothly(p, 800);
     delay_step();
 
     printf("=== Grip to shot complete ===\r\n");
@@ -501,7 +501,7 @@ void arm_high_grip_to_shot(void)
     p = current_pos;
     p.xiaobi = PROCESS_XIAOBI;
     printf("Step 1: Moving to shot dabi position\r\n");
-    move_pose_smoothly(p, 800);
+    move_pose_smoothly(p, 600);
     delay_step();
 
     // 3) 中臂到过程位，底座到投掷位
@@ -509,7 +509,7 @@ void arm_high_grip_to_shot(void)
     p.dabi = SHOT_POS.dabi;
     p.zhongbi = PROCESS3_ZHONGBI;
     printf("Step 4: Moving to process zhongbi position\r\n");
-    move_pose_smoothly(p, 800);
+    move_pose_smoothly(p, 600);
     delay_step();
 
     p = current_pos;
@@ -545,10 +545,10 @@ void arm_shot_to_reset(void)
     ServoPositions p;
 
     // 1) 回到复位位置，准备下一次抓取
-    p = RESET_POS;
-    printf("Step 1: Moving to grip di position\r\n");
-    move_pose_smoothly(p, 600);
-    delay_step();
+    //    p = RESET_POS;
+    //    printf("Step 1: Moving to grip di position\r\n");
+    //    move_pose_smoothly(p, 600);
+    //    delay_step();
 
     p = RESET_POS_2;
     printf("Step 1: Moving to grip di position\r\n");
@@ -566,7 +566,7 @@ void arm_store_to_reset(void)
 
     p = RESET_POS_2;
     printf("Step 1: Moving to grip di position\r\n");
-    move_pose_smoothly(p, 400);
+    move_pose_smoothly(p, 600);
     delay_step();
 
     printf("=== Shot to grip prepare complete ===\r\n");
@@ -644,7 +644,7 @@ void arm_high_grip_to_store(void)
     p = current_pos;
     p.xiaobi = PROCESS_XIAOBI;
     printf("Step 1: Moving to shot dabi position\r\n");
-    move_pose_smoothly(p, 800);
+    move_pose_smoothly(p, 600);
     delay_step();
 
     // 3) 中臂到过程位，底座到投掷位
@@ -652,7 +652,7 @@ void arm_high_grip_to_store(void)
     p.dabi = STORE_POS.dabi;
     p.zhongbi = PROCESS3_ZHONGBI;
     printf("Step 4: Moving to process zhongbi position\r\n");
-    move_pose_smoothly(p, 800);
+    move_pose_smoothly(p, 600);
     delay_step();
 
     p = current_pos;
@@ -660,14 +660,14 @@ void arm_high_grip_to_store(void)
     p.zhongbi = PROCESS_ZHONGBI;
     p.di = STORE_POS.di;
     printf("Step 4: Moving to process zhongbi position\r\n");
-    move_pose_smoothly(p, 800);
+    move_pose_smoothly(p, 600);
     delay_step();
 
     // 4) 中臂到投掷位，准备放飞镖
     p = current_pos;
     p.zhongbi = STORE_POS.zhongbi;
     printf("Step 6: Moving to shot zhongbi position for dart placement\r\n");
-    move_pose_smoothly(p, 1000);
+    move_pose_smoothly(p, 900);
     delay_step();
 
     // 5) 打开夹爪，放飞镖
