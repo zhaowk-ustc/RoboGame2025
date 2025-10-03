@@ -18,10 +18,12 @@
 
 #define VERTICAL_DABI 580
 
-#define PROCESS_ZHONGBI 1190
+#define PROCESS_ZHONGBI 1210
 #define PROCESS_XIAOBI 1100
-#define PROCESS2_ZHONGBI 890 // 因为机械限位
-#define PROCESS3_ZHONGBI 990 // 也是机械限位
+#define PROCESS_WAIT_DABI 300
+#define PROCESS_WAIT_ZHONGBI 700
+#define PROCESS2_ZHONGBI 910 // 因为机械限位
+#define PROCESS3_ZHONGBI 1010 // 也是机械限位
 
 // 运动控制参数
 #define SMOOTH_DELAY_MS 20
