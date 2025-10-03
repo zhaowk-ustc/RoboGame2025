@@ -27,6 +27,14 @@ static const ServoPositions RESET_POS_2 = {
     .shouwan = 680,
     .gripper = GRIPPER_OPEN};
 
+static const ServoPositions PREPARE_POS_0 = {
+    .di = 970,
+    .dabi = 530,
+    .zhongbi = 540,
+    .xiaobi = 1060,
+    .shouwan = 680,
+    .gripper = GRIPPER_OPEN};
+
 static const ServoPositions PREPARE_POS = {
     .di = 970,
     .dabi = 560,
@@ -45,7 +53,7 @@ static const ServoPositions PREPARE_POS_1 = {
 
 static const ServoPositions PREPARE_POS_2 = {
     .di = 970,
-    .dabi = 680,
+    .dabi = 665,
     .zhongbi = 750,
     .xiaobi = 1060,
     .shouwan = 680,
@@ -86,8 +94,8 @@ static const ServoPositions HIGH_PREPARE_POS = {
 static const ServoPositions HIGH_GRASP_POS = {
     .di = 970,
     .dabi = 700,
-    .zhongbi = 1100,
-    .xiaobi = 770,
+    .zhongbi = 1080,
+    .xiaobi = 780,
     .shouwan = 680,
     .gripper = GRIPPER_CLOSE};
 
@@ -303,7 +311,7 @@ void arm_prepare_to_grip(void)
 
     // 1) 同步将大臂/中臂移动到抓取位（其他关节保持不变）
     ServoPositions p = current_pos;
-    p = PREPARE_POS_4;
+    p = PREPARE_POS_2;
     printf("Step 1: Moving arm to grip position\r\n");
     move_pose_smoothly(p, 800);
     delay_step();
