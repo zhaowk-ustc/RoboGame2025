@@ -108,7 +108,7 @@ static const ServoPositions HIGH_GRASP_POS_2 = {
     .gripper = GRIPPER_CLOSE};
 
 static const ServoPositions STORE_POS = {
-    .di = 630,
+    .di = 620,
     .dabi = 580,
     .zhongbi = 1030,
     .xiaobi = 390,
@@ -116,7 +116,7 @@ static const ServoPositions STORE_POS = {
     .gripper = GRIPPER_CLOSE};
 
 static const ServoPositions SHOT_POS = {
-    .di = 520,
+    .di = 510,
     .dabi = 570,
     .zhongbi = 1040,
     .xiaobi = 370,
