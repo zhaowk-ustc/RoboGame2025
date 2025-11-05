@@ -16,13 +16,13 @@
 #define GRIPPER_MOVE_TIME_MS 300 // 爪子单独运动时间
 #define SHOUWAN 680
 
-#define VERTICAL_DABI 580
+#define VERTICAL_DABI 581
 
 #define PROCESS_ZHONGBI 1210
 #define PROCESS_XIAOBI 1100
 #define PROCESS_WAIT_DABI 300
 #define PROCESS_WAIT_ZHONGBI 700
-#define PROCESS2_ZHONGBI 910 // 因为机械限位
+#define PROCESS2_ZHONGBI 910  // 因为机械限位
 #define PROCESS3_ZHONGBI 1010 // 也是机械限位
 
 // 运动控制参数
